@@ -32,6 +32,10 @@ enum AppDesign {
     modernStyle ? 7 : 4
   }
 
+  static var dateCellSpacing: Double {
+    (modernStyle ? 3 : 2) * AppPreferences.General.contentScale.rawValue
+  }
+
   static var menuIconSize: Double {
     isMacOSTahoe ? 17 : 14
   }

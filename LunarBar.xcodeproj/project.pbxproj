@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A5448082EB0D11E0083B902 /* EventListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5448072EB0D11E0083B902 /* EventListView.swift */; };
 		87007C1F2CE7157F006E98DE /* RuntimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87007C1E2CE7157F006E98DE /* RuntimeTests.swift */; };
 		871429192B3DAF4A003FA2CB /* AppLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 871429182B3DAF4A003FA2CB /* AppLocalizer.swift */; };
 		8714291C2B3DBFDF003FA2CB /* AppMainVC+Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8714291B2B3DBFDF003FA2CB /* AppMainVC+Menu.swift */; };
@@ -56,6 +57,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1A5448072EB0D11E0083B902 /* EventListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventListView.swift; sourceTree = "<group>"; };
 		87007C1E2CE7157F006E98DE /* RuntimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeTests.swift; sourceTree = "<group>"; };
 		871429182B3DAF4A003FA2CB /* AppLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLocalizer.swift; sourceTree = "<group>"; };
 		8714291B2B3DBFDF003FA2CB /* AppMainVC+Menu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppMainVC+Menu.swift"; sourceTree = "<group>"; };
@@ -254,6 +256,7 @@
 		8782F4752B33F8EF008B1912 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				1A5448072EB0D11E0083B902 /* EventListView.swift */,
 				8782F4822B342413008B1912 /* HeaderView.swift */,
 				87DA5AFE2B3433D400CE2C1A /* WeekdayView.swift */,
 				8740E30A2B37F969004A06C2 /* EventView.swift */,
@@ -395,6 +398,7 @@
 				873424D02B35357B00C364BF /* DateGridCell.swift in Sources */,
 				871429192B3DAF4A003FA2CB /* AppLocalizer.swift in Sources */,
 				875A81292B39558000C031C3 /* AppUpdater.swift in Sources */,
+				1A5448082EB0D11E0083B902 /* EventListView.swift in Sources */,
 				875A81282B39558000C031C3 /* AppVersion.swift in Sources */,
 				8782F46F2B33F627008B1912 /* AppDefinitions.swift in Sources */,
 				879B2B8D2DFC3D9A009850B0 /* AppHacks.swift in Sources */,

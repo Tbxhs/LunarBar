@@ -18,12 +18,16 @@ import LunarBarKit
 final class DateGridCell: NSCollectionViewItem {
   static let reuseIdentifier = NSUserInterfaceItemIdentifier("DateGridCell")
 
-  private var cellDate: Date?
+  private(set) var cellDate: Date?
   private var cellEvents = [EKCalendarItem]()
   private var mainInfo = ""
+  private var isDateSelected = false
 
   private var detailsTask: Task<Void, Never>?
   private weak var detailsPopover: NSPopover?
+
+  // Callback when the cell is clicked to select the date
+  var onDateSelected: ((Date, [EKCalendarItem]) -> Void)?
 
   private let containerView: CustomButton = {
     let button = CustomButton()
@@ -83,6 +87,21 @@ final class DateGridCell: NSCollectionViewItem {
     return view
   }()
 
+  private let selectionRingView: NSView = {
+    let view = NSView()
+    view.wantsLayer = true
+    view.isHidden = true
+    view.setAccessibilityHidden(true)
+
+    view.layer?.borderWidth = Constants.selectionRingBorderWidth
+    view.layer?.borderColor = NSColor.systemGreen.cgColor
+    view.layer?.cornerRadius = AppDesign.cellCornerRadius
+    view.layer?.cornerCurve = .continuous
+    view.layer?.backgroundColor = NSColor.clear.cgColor
+
+    return view
+  }()
+
   private let holidayView: NSImageView = {
     let view = NSImageView(image: Constants.holidayViewImage)
     view.isHidden = true
@@ -110,7 +129,20 @@ extension DateGridCell {
     containerView.frame = view.bounds
 
     highlightView.layerBackgroundColor = .highlightedBackground
-    focusRingView.layer?.borderColor = Colors.controlAccent.cgColor
+
+    // 设置今日标记为绿色圆形背景
+    focusRingView.layer?.backgroundColor = NSColor.systemGreen.cgColor
+    focusRingView.layer?.borderWidth = 0  // 移除边框
+
+    // 根据 focusRingView 的实际尺寸设置圆角，让它变成圆形或近似圆形
+    let size = focusRingView.bounds.size
+    let radius = min(size.width, size.height) / 2
+    focusRingView.layer?.cornerRadius = radius
+
+    // 设置选中标记为空心圆圈
+    let selectionSize = selectionRingView.bounds.size
+    let selectionRadius = min(selectionSize.width, selectionSize.height) / 2
+    selectionRingView.layer?.cornerRadius = selectionRadius
   }
 }
 
@@ -179,6 +211,18 @@ extension DateGridCell {
     let isDateToday = Calendar.solar.isDate(cellDate, inSameDayAs: currentDate)
     focusRingView.isHidden = !isDateToday
 
+    // Show selection ring for selected non-today dates
+    selectionRingView.isHidden = !(isDateSelected && !isDateToday)
+
+    // 当是今天时，文字显示为白色
+    if isDateToday {
+      solarLabel.textColor = .white
+      lunarLabel.textColor = .white
+    } else {
+      solarLabel.textColor = Colors.primaryLabel
+      lunarLabel.textColor = Colors.primaryLabel
+    }
+
     // Reload event dot views
     eventView.updateEvents(cellEvents)
 
@@ -189,10 +233,10 @@ extension DateGridCell {
       holidayView.contentTintColor = nil
     case .workday:
       holidayView.isHidden = false
-      holidayView.contentTintColor = Colors.systemOrange
+      holidayView.contentTintColor = .systemRed  // 上班日用红色
     case .holiday:
       holidayView.isHidden = false
-      holidayView.contentTintColor = Colors.systemTeal
+      holidayView.contentTintColor = .systemGreen  // 休假日用绿色
     }
 
     self.mainInfo = {
@@ -269,6 +313,13 @@ extension DateGridCell {
     highlightView.alphaValue = 0
     return dismissDetails()
   }
+
+  func setSelected(_ selected: Bool) {
+    isDateSelected = selected
+    // Update selection ring visibility
+    let isDateToday = cellDate.map { Calendar.solar.isDate($0, inSameDayAs: Date.now) } ?? false
+    selectionRingView.isHidden = !(isDateSelected && !isDateToday)
+  }
 }
 
 // MARK: - Private
@@ -279,6 +330,7 @@ private extension DateGridCell {
     static let lunarFontSize: Double = FontSizes.small
     static let eventViewHeight: Double = 10
     static let focusRingBorderWidth: Double = 2
+    static let selectionRingBorderWidth: Double = 2
     static let holidayViewImage: NSImage = .with(symbolName: Icons.bookmarkFill, pointSize: 9)
     static let lunarDateFormatter: DateFormatter = .lunarDate
   }
@@ -286,15 +338,19 @@ private extension DateGridCell {
   func setUp() {
     view.addSubview(containerView)
     containerView.addAction { [weak self] in
-      self?.revealDateInCalendar()
-    }
-
-    containerView.onMouseHover = { [weak self] isHovered in
-      self?.onMouseHover(isHovered)
+      self?.handleCellClick()
     }
 
     highlightView.translatesAutoresizingMaskIntoConstraints = false
     containerView.addSubview(highlightView)
+
+    // 先添加 focusRingView（绿色圆形背景），确保在文字下方
+    focusRingView.translatesAutoresizingMaskIntoConstraints = false
+    containerView.addSubview(focusRingView)
+
+    // 添加 selectionRingView（绿色空心圆圈），用于非今天的选中状态
+    selectionRingView.translatesAutoresizingMaskIntoConstraints = false
+    containerView.addSubview(selectionRingView)
 
     solarLabel.translatesAutoresizingMaskIntoConstraints = false
     containerView.addSubview(solarLabel)
@@ -318,8 +374,6 @@ private extension DateGridCell {
       eventView.heightAnchor.constraint(equalToConstant: Constants.eventViewHeight),
     ])
 
-    focusRingView.translatesAutoresizingMaskIntoConstraints = false
-    containerView.addSubview(focusRingView)
     NSLayoutConstraint.activate([
       highlightView.topAnchor.constraint(equalTo: containerView.topAnchor),
       highlightView.bottomAnchor.constraint(equalTo: eventView.bottomAnchor, constant: AppDesign.cellRectInset),
@@ -335,11 +389,18 @@ private extension DateGridCell {
         constant: Constants.focusRingBorderWidth + AppDesign.cellRectInset * 2
       ),
 
-      // The focus ring has the same frame as the highlight view
-      focusRingView.leadingAnchor.constraint(equalTo: highlightView.leadingAnchor),
-      focusRingView.trailingAnchor.constraint(equalTo: highlightView.trailingAnchor),
-      focusRingView.topAnchor.constraint(equalTo: highlightView.topAnchor),
-      focusRingView.bottomAnchor.constraint(equalTo: highlightView.bottomAnchor),
+      // focusRingView 设置为正方形，居中显示
+      focusRingView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+      focusRingView.centerYAnchor.constraint(equalTo: highlightView.centerYAnchor),
+      focusRingView.widthAnchor.constraint(equalTo: focusRingView.heightAnchor),  // 宽高相等=正方形
+      focusRingView.widthAnchor.constraint(equalTo: highlightView.widthAnchor),
+      focusRingView.heightAnchor.constraint(lessThanOrEqualTo: highlightView.heightAnchor),
+
+      // selectionRingView 与 focusRingView 相同大小和位置
+      selectionRingView.centerXAnchor.constraint(equalTo: focusRingView.centerXAnchor),
+      selectionRingView.centerYAnchor.constraint(equalTo: focusRingView.centerYAnchor),
+      selectionRingView.widthAnchor.constraint(equalTo: focusRingView.widthAnchor),
+      selectionRingView.heightAnchor.constraint(equalTo: focusRingView.heightAnchor),
     ])
 
     holidayView.translatesAutoresizingMaskIntoConstraints = false
@@ -354,6 +415,15 @@ private extension DateGridCell {
     let longPressRecognizer = NSPressGestureRecognizer(target: self, action: #selector(onLongPress(_:)))
     longPressRecognizer.minimumPressDuration = 0.5
     view.addGestureRecognizer(longPressRecognizer)
+  }
+
+  func handleCellClick() {
+    guard let cellDate else {
+      return Logger.assertFail("Missing cellDate to continue")
+    }
+
+    // Notify parent view to update event list
+    onDateSelected?(cellDate, cellEvents)
   }
 
   func revealDateInCalendar() {
@@ -377,40 +447,6 @@ private extension DateGridCell {
 
     dismissDetails()
     (NSApp.delegate as? AppDelegate)?.countDaysBetween(targetDate: cellDate)
-  }
-
-  func onMouseHover(_ isHovered: Bool) {
-    highlightView.setAlphaValue(isHovered ? 1 : 0)
-    dismissDetails()
-
-    guard isHovered else {
-      return
-    }
-
-    let showDetails = {
-      try await Task.sleep(for: .seconds(0.5))
-      let popover = DateDetailsView.createPopover(
-        title: self.mainInfo,
-        events: self.cellEvents,
-        lineWidth: self.view.hairlineWidth
-      )
-
-      popover.show(
-        relativeTo: self.containerView.bounds,
-        of: self.containerView,
-        preferredEdge: .maxY
-      )
-
-      if !AppPreferences.Accessibility.reduceMotion {
-        popover.window?.fadeIn()
-      }
-
-      self.detailsPopover = popover
-    }
-
-    detailsTask = Task {
-      try? await showDetails()
-    }
   }
 
   @discardableResult

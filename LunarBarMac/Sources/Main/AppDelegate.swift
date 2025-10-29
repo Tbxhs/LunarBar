@@ -23,19 +23,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   private var countingDate: Date?
 
   func applicationDidFinishLaunching(_ notification: Notification) {
+    Logger.log(.info, "applicationDidFinishLaunching: start")
     // We rely on tooltips to display information, change the initial delay to 1s to be faster
     UserDefaults.standard.setValue(1000, forKey: "NSInitialToolTipDelay")
+    Logger.log(.info, "Tooltip delay configured")
 
     // Prepare public holiday data
     _ = HolidayManager.default
+    Logger.log(.info, "Holiday manager initialized")
 
     // Update the icon and attach it to the menu bar
     updateMenuBarIcon()
     statusItem.isVisible = true
+    Logger.log(.info, "Status item visible: \(self.statusItem.isVisible)")
 
     // Repeated refresh based on the date format granularity
     dateRefreshTimer = DateRefreshTimer { [weak self] in self?.updateMenuBarIcon() }
     updateDateRefreshTimer()
+    Logger.log(.info, "Date refresh timer configured")
 
     // Observe events that do not require a specific window
     NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
@@ -75,16 +80,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       }
     }
 
+    Logger.log(.info, "Requesting calendar access and preload")
     Task {
       await CalendarManager.default.requestAccessIfNeeded(type: .event)
       await CalendarManager.default.preload(date: .now)
+      Logger.log(.info, "Calendar preload finished")
 
       // We don't even have a main window, open the panel for initial launch
       DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
         guard AppPreferences.General.initialLaunch else {
+          Logger.log(.info, "Initial launch already handled")
           return
         }
 
+        Logger.log(.info, "Initial launch: opening panel")
         self.openPanel()
         AppPreferences.General.initialLaunch = false
       }
@@ -100,6 +109,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       }
     }
 
+    Logger.log(.info, "Scheduling update checks")
     // Check for updates on launch with a delay
     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: silentlyCheckUpdates)
 
@@ -107,6 +117,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     Timer.scheduledTimer(withTimeInterval: 7 * 24 * 60 * 60, repeats: true) { _ in
       silentlyCheckUpdates()
     }
+    Logger.log(.info, "applicationDidFinishLaunching: observers registering")
 
     NotificationCenter.default.addObserver(
       self,
@@ -135,6 +146,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       name: .menuBarIconDidChange,
       object: nil
     )
+    Logger.log(.info, "applicationDidFinishLaunching: finished")
   }
 
   func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -145,20 +157,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
   @MainActor
   func updateMenuBarIcon(needsLayout: Bool = false) {
-    switch AppPreferences.General.menuBarIcon {
-    case .filledDate:
-      statusItem.button?.image = AppIconFactory.createDateIcon(style: .filled)
-    case .outlinedDate:
-      statusItem.button?.image = AppIconFactory.createDateIcon(style: .outlined)
-    case .calendar:
-      statusItem.button?.image = AppIconFactory.createCalendarIcon()
-    case .systemSymbol:
-      statusItem.button?.image = AppIconFactory.createSystemIcon()
-    case .custom:
-      statusItem.button?.image = AppIconFactory.createCustomIcon()
-    }
+    // 使用固定的日期格式显示文字
+    let dateFormatter = DateFormatter()
+    dateFormatter.locale = Locale(identifier: "zh_CN")
+    dateFormatter.dateFormat = "M月d日 EEE"  // 输出格式：10月25日 周六
 
-    let accessibilityLabel = AppPreferences.General.menuBarIcon == .custom ? customDateText() : "LunarBar"
+    let dateText = dateFormatter.string(from: Date.now)
+    statusItem.button?.title = dateText
+    statusItem.button?.image = nil  // 移除图标
+
+    let accessibilityLabel = dateText
     statusItem.button?.setAccessibilityLabel(accessibilityLabel)
 
     // The popover position will be slightly moved without this trick
@@ -193,6 +201,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     guard let sender = statusItem.button else {
       return Logger.assertFail("Missing source view to proceed")
     }
+    Logger.log(.info, "openPanel: presenting popover")
 
     let popover = AppMainVC.createPopover()
     popover.delegate = self
@@ -202,6 +211,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // Ensure the app is activated and the window is key and ordered front
     NSApp.activate(ignoringOtherApps: true)
     popover.contentViewController?.view.window?.makeKeyAndOrderFront(nil)
+    Logger.log(.info, "openPanel: popover shown")
 
     // Keep the button highlighted to mimic the system behavior
     sender.highlight(true)

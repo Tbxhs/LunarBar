@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import EventKit
 import LunarBarKit
 
 /**
@@ -22,6 +23,7 @@ final class AppMainVC: NSViewController {
   private let headerView = HeaderView()
   private let weekdayView = WeekdayView()
   private let dateGridView = DateGridView()
+  private let eventListView = EventListView()
 
   // Factory function
   static func createPopover() -> NSPopover {
@@ -45,20 +47,46 @@ extension AppMainVC {
     // Required prior to macOS Sonoma
     view = NSView(frame: CGRect(origin: .zero, size: Self.desiredContentSize))
     view.addScalableView(scalableView, scale: AppPreferences.General.contentScale.rawValue)
+    Logger.log(.info, "AppMainVC.loadView finished")
   }
 
   override func viewDidLoad() {
     super.viewDidLoad()
     setUp()
     observeKeyEvents()
+    Logger.log(.info, "AppMainVC.viewDidLoad")
   }
 
   override func viewWillAppear() {
     super.viewWillAppear()
     applyMaterial(AppPreferences.Accessibility.popoverMaterial)
+    Logger.log(.info, "AppMainVC.viewWillAppear")
 
     updateAppearance()
     updateCalendar()
+
+    // Select today after a short delay to ensure calendar is loaded
+    Task {
+      // Wait for calendar to load
+      try? await Task.sleep(for: .milliseconds(100))
+
+      let today = Date.now
+      if Calendar.solar.month(from: monthDate) == Calendar.solar.month(from: today) {
+        // Get today's events
+        let startOfDay = Calendar.solar.startOfDay(for: today)
+        let endOfDay = Calendar.solar.endOfDay(for: today)
+        let events = try? await CalendarManager.default.items(from: startOfDay, to: endOfDay)
+        let todayEvents = events?.filter {
+          $0.overlaps(startOfDay: startOfDay, endOfDay: endOfDay)
+        }.oldestToNewest ?? []
+
+        // Select today and update event list
+        await MainActor.run {
+          dateGridView.selectDate(today)
+          updateEventList(for: today, events: todayEvents)
+        }
+      }
+    }
   }
 
   // MARK: - Updating
@@ -80,6 +108,10 @@ extension AppMainVC {
 
     headerView.updateCalendar(date: targetDate)
     dateGridView.updateCalendar(date: targetDate, lunarInfo: lunarInfo)
+
+    // Clear selection when month changes
+    dateGridView.clearSelection()
+    eventListView.updateEventsWithStorage([])
   }
 
   func updateCalendar(moveBy offset: Int, unit: Calendar.Component) {
@@ -94,6 +126,22 @@ extension AppMainVC {
   func togglePinnedOnTop() {
     pinnedOnTop.toggle()
     popover?.behavior = pinnedOnTop ? .applicationDefined : .transient
+  }
+
+  func updateEventList(for date: Date, events: [EKCalendarItem]) {
+    eventListView.updateEventsWithStorage(events)
+
+    // Update view and popover size to accommodate event list
+    let baseSize = Self.desiredContentSize
+    let eventListHeight = eventListView.intrinsicContentSize.height
+    let newSize = CGSize(width: baseSize.width, height: baseSize.height + eventListHeight)
+
+    // Update the main view size
+    view.setFrameSize(newSize)
+
+    // Update popover size
+    popover?.contentSize = newSize
+    Logger.log(.info, "updateEventList: events=\(events.count) height=\(eventListHeight)")
   }
 }
 
@@ -129,10 +177,17 @@ private extension AppMainVC {
     let cellInset = AppDesign.cellRectInset * 2
     let contentMargin = AppDesign.contentMargin * 2
     let contentScale = AppPreferences.General.contentScale.rawValue
+    let cellSpacing = AppDesign.dateCellSpacing
 
     return CGSize(
-      width: 240 * contentScale + cellInset * Double(Calendar.solar.numberOfDaysInWeek) + contentMargin,
-      height: 320 * contentScale + cellInset * Double(Calendar.solar.numberOfRowsInMonth) + contentMargin
+      width: 240 * contentScale
+        + cellInset * Double(Calendar.solar.numberOfDaysInWeek)
+        + cellSpacing * Double(Calendar.solar.numberOfDaysInWeek - 1)
+        + contentMargin,
+      height: 320 * contentScale
+        + cellInset * Double(Calendar.solar.numberOfRowsInMonth)
+        + cellSpacing * Double(Calendar.solar.numberOfRowsInMonth - 1)
+        + contentMargin
     )
   }
 
@@ -143,6 +198,18 @@ private extension AppMainVC {
     headerView.delegate = self
     headerView.translatesAutoresizingMaskIntoConstraints = false
     view.addSubview(headerView)
+
+    // Set up date selection callback
+    dateGridView.onDateSelected = { [weak self] date, events in
+      Logger.log(.info, "Date selected: \(date) events=\(events.count)")
+      self?.updateEventList(for: date, events: events)
+    }
+
+    // Set up event click callback
+    eventListView.onEventClick = { event in
+      (NSApp.delegate as? AppDelegate)?.openCalendar(targetDate: event.startOfItem ?? Date.now)
+    }
+
     NSLayoutConstraint.activate([
       headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: margin),
       headerView.topAnchor.constraint(equalTo: view.topAnchor, constant: margin),
@@ -161,11 +228,25 @@ private extension AppMainVC {
 
     dateGridView.translatesAutoresizingMaskIntoConstraints = false
     view.addSubview(dateGridView)
+
+    eventListView.translatesAutoresizingMaskIntoConstraints = false
+    eventListView.isHidden = true
+    view.addSubview(eventListView)
+
+    // Calculate fixed height for dateGridView to maintain its size
+    let dateGridHeight = Self.desiredContentSize.height - margin - Constants.headerViewHeight - Constants.weekdayViewHeight - Constants.dateGridViewMarginTop - margin
+
     NSLayoutConstraint.activate([
+      // Date grid view with fixed height to maintain original size
       dateGridView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: margin),
       dateGridView.topAnchor.constraint(equalTo: weekdayView.bottomAnchor, constant: Constants.dateGridViewMarginTop),
       dateGridView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -margin),
-      dateGridView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -margin),
+      dateGridView.heightAnchor.constraint(equalToConstant: dateGridHeight),
+
+      // Event list view positioned directly below date grid (no bottom constraint)
+      eventListView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: margin),
+      eventListView.topAnchor.constraint(equalTo: dateGridView.bottomAnchor),
+      eventListView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -margin),
     ])
   }
 

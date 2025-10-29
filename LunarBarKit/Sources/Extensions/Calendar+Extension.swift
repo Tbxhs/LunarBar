@@ -13,12 +13,15 @@ public extension Calendar {
   /// if the current calendar is gregorian, we should use it instead of creating a gregorian calendar,
   /// the reason is that the first weekday of a calendar can be customized.
   static var solar: Calendar {
-    let current = autoupdatingCurrent
+    var current = autoupdatingCurrent
     if current.identifier == .gregorian {
+      current.firstWeekday = 2  // 强制从周一开始
       return current
     }
 
-    return Self(identifier: .gregorian)
+    var gregorian = Self(identifier: .gregorian)
+    gregorian.firstWeekday = 2  // 强制从周一开始
+    return gregorian
   }
 
   /// Returns a lunar calendar, basically the Chinese calendar.

@@ -16,6 +16,10 @@ final class DateGridView: NSView {
   private var monthDate: Date?
   private var lunarInfo: LunarInfo?
   private var dataSource: NSCollectionViewDiffableDataSource<Section, Model>?
+  private var selectedDate: Date?
+
+  // Callback when a date is selected
+  var onDateSelected: ((Date, [EKCalendarItem]) -> Void)?
 
   private let collectionView: NSCollectionView = {
     let view = NSCollectionView()
@@ -40,6 +44,19 @@ final class DateGridView: NSView {
           monthDate: self?.monthDate,
           lunarInfo: self?.lunarInfo
         )
+
+        // Set selection callback
+        cell.onDateSelected = { [weak self] date, events in
+          self?.handleDateSelection(date: date, events: events)
+        }
+
+        // Update selection state
+        if let self, let selectedDate = self.selectedDate {
+          let isSelected = Calendar.solar.isDate(object.date, inSameDayAs: selectedDate)
+          cell.setSelected(isSelected)
+        } else {
+          cell.setSelected(false)
+        }
       } else {
         Logger.assertFail("Invalid cell type is found: \(cell)")
       }
@@ -71,6 +88,45 @@ final class DateGridView: NSView {
     }
 
     return cancelled
+  }
+
+  func selectDate(_ date: Date?) {
+    selectedDate = date
+    // Update all visible cells
+    visibleCells.forEach { cell in
+      if let cellDate = cell.cellDate, let selectedDate {
+        cell.setSelected(Calendar.solar.isDate(cellDate, inSameDayAs: selectedDate))
+      } else {
+        cell.setSelected(false)
+      }
+    }
+  }
+
+  func clearSelection() {
+    selectedDate = nil
+    visibleCells.forEach { $0.setSelected(false) }
+  }
+
+  private func handleDateSelection(date: Date, events: [EKCalendarItem]) {
+    // Don't do anything if the same date is clicked again
+    if let selectedDate, Calendar.solar.isDate(date, inSameDayAs: selectedDate) {
+      return
+    }
+
+    // Update selection
+    selectedDate = date
+
+    // Update all cells
+    visibleCells.forEach { cell in
+      if let cellDate = cell.cellDate {
+        cell.setSelected(Calendar.solar.isDate(cellDate, inSameDayAs: date))
+      } else {
+        cell.setSelected(false)
+      }
+    }
+
+    // Notify parent view
+    onDateSelected?(date, events)
   }
 }
 
@@ -141,11 +197,18 @@ private extension DateGridView {
    Returns a 7 (column) * 6 (rows) grid layout for the collection.
    */
   func createLayout() -> NSCollectionViewLayout {
+    let spacing = CGFloat(AppDesign.dateCellSpacing)
     let item = NSCollectionLayoutItem(
       layoutSize: NSCollectionLayoutSize(
         widthDimension: .fractionalWidth(1 / Double(Calendar.solar.numberOfDaysInWeek)),
         heightDimension: .fractionalHeight(1)
       )
+    )
+    item.contentInsets = NSDirectionalEdgeInsets(
+      top: 0,
+      leading: spacing * 0.5,
+      bottom: 0,
+      trailing: spacing * 0.5
     )
 
     let group = NSCollectionLayoutGroup.horizontal(
@@ -157,6 +220,7 @@ private extension DateGridView {
     )
 
     let section = NSCollectionLayoutSection(group: group)
+    section.interGroupSpacing = spacing
     let layout = NSCollectionViewCompositionalLayout(section: section)
     return layout
   }

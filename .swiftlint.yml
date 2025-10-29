@@ -454,3 +454,9 @@ type_name:
   max_length:
     warning: 75
     error: 75
+
+excluded:
+  - build
+  - "**/DerivedSources/**"
+  - "**/*.generated.swift"
+  - "**/resource_bundle_accessor.swift"
