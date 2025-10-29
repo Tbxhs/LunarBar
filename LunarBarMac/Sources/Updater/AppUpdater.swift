@@ -10,7 +10,7 @@ import LunarBarKit
 
 enum AppUpdater {
   private enum Constants {
-    static let endpoint = "https://api.github.com/repos/LunarBar-app/LunarBar/releases/latest"
+    static let endpoint = "https://api.github.com/repos/Tbxhs/LunarBar/releases/latest"
     static let decoder = {
       let decoder = JSONDecoder()
       decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -62,7 +62,7 @@ private extension AppUpdater {
       return
     }
 
-    NSWorkspace.shared.safelyOpenURL(string: "https://github.com/LunarBar-app/LunarBar/releases")
+    NSWorkspace.shared.safelyOpenURL(string: "https://github.com/Tbxhs/LunarBar/releases")
   }
 
   static func presentUpdate(newVersion: AppVersion, explicitly: Bool) {
