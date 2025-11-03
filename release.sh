@@ -72,7 +72,23 @@ if [ ! -d "$APP_PATH" ]; then
     fi
 fi
 
-hdiutil create -volname "LunarBar" -srcfolder "$APP_PATH" -ov -format UDZO "dist/LunarBar-${VERSION}.dmg" > /dev/null
+# Create temporary directory for DMG contents
+DMG_TEMP="dist/dmg_temp"
+rm -rf "$DMG_TEMP"
+mkdir -p "$DMG_TEMP"
+
+# Copy app to temp directory
+cp -R "$APP_PATH" "$DMG_TEMP/"
+
+# Create symbolic link to Applications folder
+ln -s /Applications "$DMG_TEMP/Applications"
+
+# Create DMG from temp directory
+hdiutil create -volname "LunarBar" -srcfolder "$DMG_TEMP" -ov -format UDZO "dist/LunarBar-${VERSION}.dmg" > /dev/null
+
+# Clean up temp directory
+rm -rf "$DMG_TEMP"
+
 DMG_SIZE=$(ls -lh "dist/LunarBar-${VERSION}.dmg" | awk '{print $5}')
 echo -e "${GREEN}✓ DMG created: ${DMG_SIZE}${NC}"
 echo ""

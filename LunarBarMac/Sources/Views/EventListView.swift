@@ -123,18 +123,6 @@ private extension EventListView {
     titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
-    // Strikethrough for completed reminders
-    if let reminder = event as? EKReminder, reminder.isCompleted {
-      let attributedString = NSAttributedString(
-        string: event.title,
-        attributes: [
-          .strikethroughStyle: NSUnderlineStyle.single.rawValue,
-          .font: NSFont.systemFont(ofSize: Constants.fontSize),
-        ]
-      )
-      titleLabel.attributedStringValue = attributedString
-    }
-
     // Time label
     let timeLabel = NSTextField(labelWithString: event.labelOfDates)
     timeLabel.font = .systemFont(ofSize: Constants.fontSize)
@@ -176,7 +164,34 @@ private extension EventListView {
     )
     containerView.addTrackingArea(trackingArea)
 
+    // Apply gray effect for past events
+    if isEventPast(event) {
+      containerView.alphaValue = AlphaLevels.tertiary
+    }
+
     return containerView
+  }
+
+  func isEventPast(_ event: EKCalendarItem) -> Bool {
+    let now = Date.now
+
+    guard let endDate = event.endOfItem else {
+      // No end time, use start time for判断
+      guard let startDate = event.startOfItem else {
+        return false
+      }
+      return startDate < now
+    }
+
+    // All-day event: compare dates (ignore specific time)
+    if event.isAllDayItem {
+      let todayStart = Calendar.solar.startOfDay(for: now)
+      let eventEndDayStart = Calendar.solar.startOfDay(for: endDate)
+      return eventEndDayStart < todayStart
+    }
+
+    // Timed event: directly compare timestamps
+    return endDate < now
   }
 
   @objc func handleEventClick(_ gesture: NSClickGestureRecognizer) {

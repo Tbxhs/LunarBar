@@ -51,6 +51,31 @@ enum AppUpdater {
 
 @MainActor
 private extension AppUpdater {
+  /// Compare two semantic version strings (e.g., "1.9.1" vs "1.9.2")
+  /// Returns:
+  /// - .orderedAscending if version1 < version2
+  /// - .orderedSame if version1 == version2
+  /// - .orderedDescending if version1 > version2
+  static func compareVersions(_ version1: String, _ version2: String) -> ComparisonResult {
+    let components1 = version1.split(separator: ".").compactMap { Int($0) }
+    let components2 = version2.split(separator: ".").compactMap { Int($0) }
+
+    let maxLength = max(components1.count, components2.count)
+
+    for i in 0..<maxLength {
+      let v1 = i < components1.count ? components1[i] : 0
+      let v2 = i < components2.count ? components2[i] : 0
+
+      if v1 < v2 {
+        return .orderedAscending
+      } else if v1 > v2 {
+        return .orderedDescending
+      }
+    }
+
+    return .orderedSame
+  }
+
   static func presentError() {
     let alert = NSAlert()
     alert.messageText = Localized.Updater.updateFailedTitle
@@ -75,8 +100,11 @@ private extension AppUpdater {
       return
     }
 
-    // Check if the version is different
-    guard newVersion.name != currentVersion else {
+    // Compare versions semantically
+    let comparison = compareVersions(newVersion.name, currentVersion)
+
+    // If new version is not greater than current, no update needed
+    guard comparison == .orderedDescending else {
       return {
         guard explicitly else {
           return

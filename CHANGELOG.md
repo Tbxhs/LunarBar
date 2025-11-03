@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.9.2] - 2025-11-03
+- Improved event list display by removing strikethrough styling for completed tasks.
+- Added visual distinction for past events with reduced opacity (gray appearance).
+- Fixed version comparison logic to properly detect updates (only notify when remote version is newer).
+- Enhanced DMG packaging with drag-to-install interface.
+
 ## [1.9.1] - 2025-06-13
 - Added configurable spacing between calendar cells to prevent today's highlight from overlapping adjacent selections.
 - Updated calendar popover sizing to account for the new inter-cell spacing.
