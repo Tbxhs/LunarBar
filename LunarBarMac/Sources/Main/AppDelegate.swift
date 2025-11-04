@@ -171,16 +171,48 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
   @MainActor
   func updateMenuBarIcon(needsLayout: Bool = false) {
-    // 使用固定的日期格式显示文字
-    let dateFormatter = DateFormatter()
-    dateFormatter.locale = Locale(identifier: "zh_CN")
-    dateFormatter.dateFormat = "M月d日 EEE"  // 输出格式：10月25日 周六
+    // Clear all content
+    statusItem.button?.title = ""
+    statusItem.button?.image = nil
 
-    let dateText = dateFormatter.string(from: Date.now)
-    statusItem.button?.title = dateText
-    statusItem.button?.image = nil  // 移除图标
+    // Select display mode based on user configuration
+    switch AppPreferences.General.menuBarIcon {
+    case .filledDate:
+      if let image = AppIconFactory.createDateIcon(style: .filled) {
+        statusItem.button?.image = image
+        statusItem.button?.imagePosition = .imageOnly
+      }
 
-    let accessibilityLabel = dateText
+    case .outlinedDate:
+      if let image = AppIconFactory.createDateIcon(style: .outlined) {
+        statusItem.button?.image = image
+        statusItem.button?.imagePosition = .imageOnly
+      }
+
+    case .calendar:
+      if let image = AppIconFactory.createCalendarIcon() {
+        statusItem.button?.image = image
+        statusItem.button?.imagePosition = .imageOnly
+      }
+
+    case .systemSymbol:
+      if let image = AppIconFactory.createSystemIcon() {
+        statusItem.button?.image = image
+        statusItem.button?.imagePosition = .imageOnly
+      }
+
+    case .custom:
+      if let image = AppIconFactory.createCustomIcon() {
+        statusItem.button?.image = image
+        statusItem.button?.imagePosition = .imageOnly
+      } else {
+        // If custom format is invalid, show default text
+        updateTitleOnly()
+      }
+    }
+
+    // Set accessibility label
+    let accessibilityLabel = getAccessibilityLabel()
     statusItem.button?.setAccessibilityLabel(accessibilityLabel)
 
     // The popover position will be slightly moved without this trick
@@ -190,6 +222,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     updateTooltip()
+  }
+
+  @MainActor
+  private func updateTitleOnly() {
+    // Fallback display mode: text only (localized)
+    let dateFormatter = DateFormatter()
+    dateFormatter.setLocalizedDateFormatFromTemplate("MMMd EEE")
+    let dateText = dateFormatter.string(from: Date.now)
+    statusItem.button?.title = dateText
+  }
+
+  @MainActor
+  private func getAccessibilityLabel() -> String {
+    return getFormattedDateString()
+  }
+
+  @MainActor
+  private func getFormattedDateString() -> String {
+    return DateFormatter.fullDate.string(from: Date.now)
   }
 
   @MainActor
@@ -205,7 +256,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   func updateTooltip() {
     let currentDate = Date.now
     statusItem.button?.toolTip = [
-      DateFormatter.fullDate.string(from: currentDate),
+      getFormattedDateString(),
       DateFormatter.lunarDate.string(from: currentDate).removingLeadingDigits,
     ].joined(separator: "\n\n")
   }
