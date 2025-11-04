@@ -27,6 +27,7 @@ enum Localized {
     static let buttonTitleNextMonth = String(localized: "Next Month", comment: "[Button] Move to the next month")
     static let buttonTitlePreviousMonth = String(localized: "Previous Month", comment: "[Button] Move to the previous month")
     static let buttonTitleShowActions = String(localized: "Show Actions", comment: "[Button] Show actions as a popup menu")
+    static let buttonTitleGotoToday = String(localized: "Go to Today", comment: "[Button] Go to today")
 
     // Menu
     static let menuTitleGotoToday = String(localized: "Today", comment: "[Menu] Move to today")
@@ -194,6 +195,7 @@ enum Localized {
 enum Icons {
   static let bookmarkFill = "bookmark.fill"
   static let calendar = "calendar"
+  static let calendarBadgeClock = "calendar.badge.clock"
   static let chevronCompactBackward = "chevron.compact.backward"
   static let chevronCompactForward = "chevron.compact.forward"
   static let circle = "circle"

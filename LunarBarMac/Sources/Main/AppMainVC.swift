@@ -157,11 +157,6 @@ extension AppMainVC: HeaderViewDelegate {
   func headerView(_ sender: HeaderView, moveBy offset: Int) {
     updateCalendar(moveBy: offset, unit: .month)
   }
-
-  // periphery:ignore:parameters sender
-  func headerView(_ sender: HeaderView, showActionsMenu sourceView: NSView) {
-    showActionsMenu(sourceView: sourceView)
-  }
 }
 
 // MARK: - Private
@@ -257,15 +252,6 @@ private extension AppMainVC {
       }
 
       switch event.keyCode {
-      case .kVK_Space:
-        // Space key is occupied by keyboard navigation
-        if NSApp.isFullKeyboardAccessEnabled {
-          return event
-        }
-
-        self.updateCalendar()
-        self.headerView.showClickEffect(for: .actions)
-        return nil
       case .kVK_Escape:
         if self.dateGridView.cancelHighlight() {
           return nil

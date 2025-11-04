@@ -43,10 +43,10 @@ extension AppMainVC {
   }
 }
 
-// MARK: - Private
+// MARK: - Internal
 
-private extension AppMainVC {
-  enum Constants {
+extension AppMainVC {
+  enum MenuConstants {
     @MainActor static let menuIconSize: Double = AppDesign.menuIconSize
   }
 
@@ -146,7 +146,7 @@ private extension AppMainVC {
     if #available(macOS 26.0, *) {
       menu.addItem({
         let item = NSMenuItem(title: Localized.UI.menuTitleClassicInterface)
-        item.image = .with(symbolName: Icons.mustacheFill, pointSize: Constants.menuIconSize)
+        item.image = .with(symbolName: Icons.mustacheFill, pointSize: MenuConstants.menuIconSize)
         item.setOn(AppPreferences.General.classicInterface)
 
         item.addAction {
@@ -166,7 +166,7 @@ private extension AppMainVC {
 
       if #available(macOS 26.0, *) {
         // To improve the text alignment
-        item.image = .with(symbolName: Icons.menubarRectangle, pointSize: Constants.menuIconSize)
+        item.image = .with(symbolName: Icons.menubarRectangle, pointSize: MenuConstants.menuIconSize)
       }
 
       return item
@@ -188,7 +188,7 @@ private extension AppMainVC {
 
     menu.addItem({
       let item = NSMenuItem(title: Localized.UI.menuTitleCalendarIcon)
-      item.image = AppIconFactory.createCalendarIcon(pointSize: Constants.menuIconSize)
+      item.image = AppIconFactory.createCalendarIcon(pointSize: MenuConstants.menuIconSize)
       item.setOn(AppPreferences.General.menuBarIcon == .calendar)
 
       item.addAction {
@@ -201,7 +201,7 @@ private extension AppMainVC {
     menu.addItem(createCustomIconItem(
       item: {
         let item = NSMenuItem(title: Localized.UI.menuTitleSystemSymbol)
-        item.image = .with(symbolName: Icons.gear, pointSize: Constants.menuIconSize)
+        item.image = .with(symbolName: Icons.gear, pointSize: MenuConstants.menuIconSize)
         item.setOn(AppPreferences.General.menuBarIcon == .systemSymbol)
         return item
       }(),
@@ -227,7 +227,7 @@ private extension AppMainVC {
     menu.addItem(createCustomIconItem(
       item: {
         let item = NSMenuItem(title: Localized.UI.menuTitleCustomFormat)
-        item.image = .with(symbolName: Icons.wandAndSparkles, pointSize: Constants.menuIconSize)
+        item.image = .with(symbolName: Icons.wandAndSparkles, pointSize: MenuConstants.menuIconSize)
         item.setOn(AppPreferences.General.menuBarIcon == .custom)
         return item
       }(),

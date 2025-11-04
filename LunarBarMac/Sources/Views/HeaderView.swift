@@ -13,7 +13,6 @@ import LunarBarKit
 protocol HeaderViewDelegate: AnyObject {
   func headerView(_ sender: HeaderView, moveTo date: Date)
   func headerView(_ sender: HeaderView, moveBy offset: Int)
-  func headerView(_ sender: HeaderView, showActionsMenu sourceView: NSView)
 }
 
 /**
@@ -52,8 +51,8 @@ final class HeaderView: NSView {
 
   private lazy var actionsButton: ImageButton = {
     let button = createButton(
-      symbolName: Icons.circle,
-      accessibilityLabel: Localized.UI.buttonTitleShowActions
+      symbolName: Icons.calendarBadgeClock,
+      accessibilityLabel: Localized.UI.buttonTitleGotoToday
     )
 
     button.addAction { [weak self] in
@@ -61,9 +60,10 @@ final class HeaderView: NSView {
         return
       }
 
-      self.delegate?.headerView(self, showActionsMenu: actionsButton)
+      self.delegate?.headerView(self, moveTo: .now)
     }
 
+    button.toolTip = Localized.UI.buttonTitleGotoToday
     return button
   }()
 

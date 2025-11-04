@@ -68,6 +68,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       return event
     }
 
+    // Handle right-click to show context menu
+    NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { [weak self] event in
+      guard let self else {
+        return event
+      }
+
+      if event.window == self.statusItem.button?.window {
+        self.showContextMenu()
+        return nil
+      }
+
+      return event
+    }
+
     // Observe clicks outside the app
     NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown) { [weak self] _ in
       guard let popover = self?.presentedPopover else {
@@ -334,5 +348,41 @@ private extension AppDelegate {
     }
 
     return true
+  }
+
+  func showContextMenu() {
+    guard let button = statusItem.button else {
+      return
+    }
+
+    // Create a temporary AppMainVC to access its menu creation methods
+    let tempVC = AppMainVC.createPopover().contentViewController as? AppMainVC
+    guard let vc = tempVC else {
+      Logger.assertFail("Failed to create temporary AppMainVC for context menu")
+      return
+    }
+
+    // Create the context menu using AppMainVC's menu creation logic
+    let menu = NSMenu()
+    menu.addItem(vc.menuItemGotoToday)
+    menu.addItem(vc.menuItemDatePicker)
+    menu.addSeparator()
+    menu.addItem(vc.menuItemAppearance)
+    menu.addItem(vc.menuItemCalendars)
+    menu.addItem(vc.menuItemPublicHolidays)
+    menu.addItem(vc.menuItemLaunchAtLogin)
+    menu.addSeparator()
+    menu.addItem(vc.menuItemOpenDateTime)
+    menu.addSeparator()
+    menu.addItem(vc.menuItemAboutLunarBar)
+    menu.addItem(vc.menuItemGitHub)
+    menu.addItem(vc.menuItemCheckForUpdates)
+    menu.addSeparator()
+    menu.addItem(vc.menuItemQuitLunarBar)
+
+    // Show the menu
+    statusItem.menu = menu
+    button.performClick(nil)
+    statusItem.menu = nil
   }
 }
