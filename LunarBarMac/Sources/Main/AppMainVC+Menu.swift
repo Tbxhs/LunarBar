@@ -229,7 +229,6 @@ extension AppMainVC {
     menu.addItem(withTitle: Localized.UI.menuTitleContentScale).isEnabled = false
     [
       (Localized.UI.menuTitleScaleDefault, ContentScale.default),
-      (Localized.UI.menuTitleScaleCompact, ContentScale.compact),
       (Localized.UI.menuTitleScaleRoomy, ContentScale.roomy),
     ].forEach { (title: String, scale: ContentScale) in
       menu.addItem(withTitle: title) { [weak self] in
@@ -413,16 +412,6 @@ extension AppMainVC {
     return item
   }
 
-  var menuItemOpenDateTime: NSMenuItem {
-    let item = NSMenuItem(title: Localized.UI.menuTitleOpenDateTime)
-    item.addAction { [weak self] in
-      self?.closePopover()
-      NSWorkspace.shared.safelyOpenURL(string: "x-apple.systempreferences:com.apple.preference.datetime")
-    }
-
-    return item
-  }
-
   var menuItemAboutLunarBar: NSMenuItem {
     let item = NSMenuItem(title: Localized.UI.menuTitleAboutLunarBar)
     item.addAction { [weak self] in
@@ -578,9 +567,6 @@ extension AppMainVC {
       menu.addItem(item)
     }
 
-    // Launch at Login
-    menu.addItem(menuItemLaunchAtLogin)
-
     // Pin on Top
     let pinItem = NSMenuItem(title: Localized.UI.menuTitlePinOnTop)
     pinItem.addAction { [weak self] in
@@ -590,11 +576,6 @@ extension AppMainVC {
     pinItem.keyEquivalentModifierMask = []
     pinItem.setOn(pinnedOnTop)
     menu.addItem(pinItem)
-
-    menu.addSeparator()
-
-    // Open System Date & Time Settings
-    menu.addItem(menuItemOpenDateTime)
 
     let item = NSMenuItem(title: Localized.UI.menuTitlePreferences)
     item.submenu = menu
@@ -724,7 +705,6 @@ extension AppMainVC {
 
     [
       (Localized.UI.menuTitleScaleDefault, ContentScale.default),
-      (Localized.UI.menuTitleScaleCompact, ContentScale.compact),
       (Localized.UI.menuTitleScaleRoomy, ContentScale.roomy),
     ].forEach { (title: String, scale: ContentScale) in
       menu.addItem(withTitle: title) { [weak self] in

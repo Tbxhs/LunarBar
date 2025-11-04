@@ -438,23 +438,6 @@
         }
       }
     },
-    "Compact" : {
-      "comment" : "[Menu] Content scale: compact",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "紧凑"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "緊湊"
-          }
-        }
-      }
-    },
     "Content Scale" : {
       "comment" : "[Menu] Section title for content scales",
       "localizations" : {
@@ -565,23 +548,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "大暑"
-          }
-        }
-      }
-    },
-    "Date & Time..." : {
-      "comment" : "[Menu] Open the system Date & Time settings pane",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日期与时间…"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日期與時間…"
           }
         }
       }
