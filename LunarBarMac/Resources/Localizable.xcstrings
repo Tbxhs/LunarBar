@@ -159,6 +159,9 @@
         }
       }
     },
+    "About & Help" : {
+      "comment" : "[Menu] About and help submenu"
+    },
     "About LunarBar" : {
       "comment" : "[Menu] Open the standard about panel",
       "localizations" : {
@@ -175,6 +178,9 @@
           }
         }
       }
+    },
+    "Accessibility" : {
+      "comment" : "[Menu] Accessibility options submenu"
     },
     "all-day" : {
       "comment" : "Label for an all-day event",
@@ -1589,6 +1595,9 @@
         }
       }
     },
+    "Go to Today" : {
+      "comment" : "[Button] Go to today"
+    },
     "Guyu" : {
       "comment" : "The 6th solar term, always in Chinese",
       "localizations" : {
@@ -2441,6 +2450,9 @@
           }
         }
       }
+    },
+    "Preferences" : {
+      "comment" : "[Menu] Open preferences submenu"
     },
     "Previous Month" : {
       "comment" : "[Button] Move to the previous month",

@@ -69,6 +69,9 @@ enum Localized {
     static let menuTitleGitHub = String(localized: "GitHub", comment: "[Menu] Open the LunarBar repository on GitHub")
     static let menuTitleCheckForUpdates = String(localized: "Check for Updates...", comment: "[Menu] Check for new versions")
     static let menuTitleQuitLunarBar = String(localized: "Quit LunarBar", comment: "[Menu] Quit the app")
+    static let menuTitlePreferences = String(localized: "Preferences", comment: "[Menu] Open preferences submenu")
+    static let menuTitleAboutAndHelp = String(localized: "About & Help", comment: "[Menu] About and help submenu")
+    static let menuTitleAccessibility = String(localized: "Accessibility", comment: "[Menu] Accessibility options submenu")
 
     // Alert
     static let alertMessageSetDateFormat = String(localized: "Set Date Format", comment: "[Alert] Configure the custom date format")

@@ -109,9 +109,9 @@ extension AppMainVC {
     headerView.updateCalendar(date: targetDate)
     dateGridView.updateCalendar(date: targetDate, lunarInfo: lunarInfo)
 
-    // Clear selection when month changes
+    // Clear selection and event list, and resize popover to base size
     dateGridView.clearSelection()
-    eventListView.updateEventsWithStorage([])
+    updateEventList(for: targetDate, events: [])
   }
 
   func updateCalendar(moveBy offset: Int, unit: Calendar.Component) {

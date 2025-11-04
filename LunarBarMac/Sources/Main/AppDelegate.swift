@@ -362,21 +362,15 @@ private extension AppDelegate {
       return
     }
 
-    // Create the context menu using AppMainVC's menu creation logic
+    // Create the refactored context menu with 6 top-level items
     let menu = NSMenu()
-    menu.addItem(vc.menuItemGotoToday)
     menu.addItem(vc.menuItemDatePicker)
-    menu.addSeparator()
-    menu.addItem(vc.menuItemAppearance)
     menu.addItem(vc.menuItemCalendars)
     menu.addItem(vc.menuItemPublicHolidays)
-    menu.addItem(vc.menuItemLaunchAtLogin)
     menu.addSeparator()
-    menu.addItem(vc.menuItemOpenDateTime)
+    menu.addItem(vc.menuItemPreferences)
     menu.addSeparator()
-    menu.addItem(vc.menuItemAboutLunarBar)
-    menu.addItem(vc.menuItemGitHub)
-    menu.addItem(vc.menuItemCheckForUpdates)
+    menu.addItem(vc.menuItemAboutAndHelp)
     menu.addSeparator()
     menu.addItem(vc.menuItemQuitLunarBar)
 
