@@ -13,6 +13,7 @@ import LunarBarKit
 protocol HeaderViewDelegate: AnyObject {
   func headerView(_ sender: HeaderView, moveTo date: Date)
   func headerView(_ sender: HeaderView, moveBy offset: Int)
+  func headerViewGotoToday(_ sender: HeaderView)
 }
 
 /**
@@ -60,7 +61,7 @@ final class HeaderView: NSView {
         return
       }
 
-      self.delegate?.headerView(self, moveTo: .now)
+      self.delegate?.headerViewGotoToday(self)
     }
 
     button.toolTip = Localized.UI.buttonTitleGotoToday
@@ -135,7 +136,7 @@ final class HeaderView: NSView {
 
     // Hidden way to goto today
     if dateLabel.frame.contains(convert(event.locationInWindow, from: nil)) {
-      delegate?.headerView(self, moveTo: .now)
+      delegate?.headerViewGotoToday(self)
     }
   }
 }

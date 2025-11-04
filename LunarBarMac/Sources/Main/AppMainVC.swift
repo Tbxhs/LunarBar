@@ -123,6 +123,29 @@ extension AppMainVC {
     updateCalendar(targetDate: newDate)
   }
 
+  func gotoToday() {
+    Logger.log(.info, "Going to today")
+    let today = Date.now
+
+    // Update calendar to today's month
+    updateCalendar(targetDate: today)
+
+    // Load today's events and select the date
+    Task {
+      let startOfDay = Calendar.solar.startOfDay(for: today)
+      let endOfDay = Calendar.solar.endOfDay(for: today)
+      let events = try? await CalendarManager.default.items(from: startOfDay, to: endOfDay)
+      let todayEvents = events?.filter {
+        $0.overlaps(startOfDay: startOfDay, endOfDay: endOfDay)
+      }.oldestToNewest ?? []
+
+      await MainActor.run {
+        dateGridView.selectDate(today)
+        updateEventList(for: today, events: todayEvents)
+      }
+    }
+  }
+
   func togglePinnedOnTop() {
     pinnedOnTop.toggle()
     popover?.behavior = pinnedOnTop ? .applicationDefined : .transient
@@ -136,11 +159,22 @@ extension AppMainVC {
     let eventListHeight = eventListView.intrinsicContentSize.height
     let newSize = CGSize(width: baseSize.width, height: baseSize.height + eventListHeight)
 
-    // Update the main view size
-    view.setFrameSize(newSize)
+    // Use animation for smooth size transitions (unless user prefers reduced motion)
+    if AppPreferences.Accessibility.reduceMotion {
+      // No animation for users who prefer reduced motion
+      view.setFrameSize(newSize)
+      popover?.contentSize = newSize
+    } else {
+      // Smooth animation for size changes
+      NSAnimationContext.runAnimationGroup { context in
+        context.duration = 0.25
+        context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-    // Update popover size
-    popover?.contentSize = newSize
+        view.animator().setFrameSize(newSize)
+        popover?.contentSize = newSize
+      }
+    }
+
     Logger.log(.info, "updateEventList: events=\(events.count) height=\(eventListHeight)")
   }
 }
@@ -156,6 +190,11 @@ extension AppMainVC: HeaderViewDelegate {
   // periphery:ignore:parameters sender
   func headerView(_ sender: HeaderView, moveBy offset: Int) {
     updateCalendar(moveBy: offset, unit: .month)
+  }
+
+  // periphery:ignore:parameters sender
+  func headerViewGotoToday(_ sender: HeaderView) {
+    gotoToday()
   }
 }
 

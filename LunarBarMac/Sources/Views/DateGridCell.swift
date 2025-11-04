@@ -372,6 +372,11 @@ private extension DateGridCell {
       eventView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
       eventView.topAnchor.constraint(equalTo: lunarLabel.bottomAnchor),
       eventView.heightAnchor.constraint(equalToConstant: Constants.eventViewHeight),
+      // Ensure eventView has enough space from the bottom to prevent clipping
+      eventView.bottomAnchor.constraint(
+        lessThanOrEqualTo: containerView.bottomAnchor,
+        constant: -AppDesign.cellRectInset
+      ),
     ])
 
     NSLayoutConstraint.activate([

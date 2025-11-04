@@ -221,6 +221,12 @@ private extension DateGridView {
 
     let section = NSCollectionLayoutSection(group: group)
     section.interGroupSpacing = spacing
+    section.contentInsets = NSDirectionalEdgeInsets(
+      top: 0,
+      leading: 0,
+      bottom: spacing,
+      trailing: 0
+    )
     let layout = NSCollectionViewCompositionalLayout(section: section)
     return layout
   }
