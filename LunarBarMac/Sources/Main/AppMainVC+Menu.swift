@@ -383,7 +383,7 @@ extension AppMainVC {
 
     menu.addItem(withTitle: Localized.UI.menuTitleCustomizationTips) { [weak self] in
       self?.closePopover()
-      NSWorkspace.shared.safelyOpenURL(string: "https://github.com/LunarBar-app/Holidays")
+      NSWorkspace.shared.safelyOpenURL(string: "https://github.com/tbxhs/Holidays")
     }
 
     menu.addSeparator()
@@ -437,7 +437,7 @@ extension AppMainVC {
     let item = NSMenuItem(title: Localized.UI.menuTitleGitHub)
     item.addAction { [weak self] in
       self?.closePopover()
-      NSWorkspace.shared.safelyOpenURL(string: "https://github.com/LunarBar-app/LunarBar")
+      NSWorkspace.shared.safelyOpenURL(string: "https://github.com/tbxhs/LunarBar")
     }
 
     return item

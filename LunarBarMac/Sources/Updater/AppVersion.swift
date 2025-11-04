@@ -8,7 +8,7 @@
 import Foundation
 
 /**
- [GitHub Releases API](https://api.github.com/repos/LunarBar-app/LunarBar/releases/latest)
+ [GitHub Releases API](https://api.github.com/repos/tbxhs/LunarBar/releases/latest)
  */
 struct AppVersion: Decodable {
   let name: String

@@ -75,9 +75,9 @@ enum Localized {
 
     // Alert
     static let alertMessageSetDateFormat = String(localized: "Set Date Format", comment: "[Alert] Configure the custom date format")
-    static let alertExplanationSetDateFormat = String(localized: "Please enter standard [date format patterns](https://unicode.org/reports/tr35/tr35-dates.html#Date_Format_Patterns) here. Refer to the [wiki](https://github.com/LunarBar-app/LunarBar/wiki) for more instructions and examples.", comment: "[Alert] Explanation for custom date format")
+    static let alertExplanationSetDateFormat = String(localized: "Please enter standard [date format patterns](https://unicode.org/reports/tr35/tr35-dates.html#Date_Format_Patterns) here. Refer to the [wiki](https://github.com/tbxhs/LunarBar/wiki) for more instructions and examples.", comment: "[Alert] Explanation for custom date format")
     static let alertMessageSetSymbolName = String(localized: "Set Symbol Name", comment: "[Alert] Configure the system symbol name")
-    static let alertExplanationSetSymbolName = String(localized: "Please enter a [SF Symbol](https://developer.apple.com/sf-symbols/) name here. Refer to the [wiki](https://github.com/LunarBar-app/LunarBar/wiki) for more instructions and examples.", comment: "[Alert] Explanation for system symbol name")
+    static let alertExplanationSetSymbolName = String(localized: "Please enter a [SF Symbol](https://developer.apple.com/sf-symbols/) name here. Refer to the [wiki](https://github.com/tbxhs/LunarBar/wiki) for more instructions and examples.", comment: "[Alert] Explanation for system symbol name")
     static let alertMessageRelaunchRequired = String(localized: "Relaunch LunarBar to apply the change.", comment: "[Alert] Message about relaunch after changing the interface")
     static let alertButtonTitleApplyChanges = String(localized: "Apply Changes", comment: "[Alert] Apply the custom date format")
 

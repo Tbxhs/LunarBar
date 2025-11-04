@@ -2,7 +2,7 @@
 
 也许是因为疯了，我才会在 2023 年末开发一款日历应用。我第一次发布日历应用是在十年前，这种没多少新意的产品似乎不值得投入。
 
-但遗憾的是，截止到 [LunarBar](https://github.com/LunarBar-app/LunarBar) 发布前，我都觉得 Mac 的状态栏没有一款日历堪称完美。
+但遗憾的是，截止到 [LunarBar](https://github.com/tbxhs/LunarBar) 发布前，我都觉得 Mac 的状态栏没有一款日历堪称完美。
 
 最近我重新思考了这个问题，并借由 LunarBar 的开发纠正了一些十年前犯过的错误，丢掉了一些历史包袱。
 
@@ -67,7 +67,7 @@ formatter.timeStyle = .none
 
 关键是，支持二十四节气并不容易。
 
-是的，你可以在网上找到很多种计算公式。遗憾的是，它们几乎都是错的，或者说不能 100% 正确。所以正如我所说，这个部分最安全的做法就是打表，LunarBar 内置了 200 年的天文台数据，并且压缩成了一个只有 35 KB 的[文件](https://github.com/LunarBar-app/LunarBar/blob/main/LunarBarKit/Sources/LunarCalendar/Resources/data.json)。
+是的，你可以在网上找到很多种计算公式。遗憾的是，它们几乎都是错的，或者说不能 100% 正确。所以正如我所说，这个部分最安全的做法就是打表，LunarBar 内置了 200 年的天文台数据，并且压缩成了一个只有 35 KB 的[文件](https://github.com/tbxhs/LunarBar/blob/main/LunarBarKit/Sources/LunarCalendar/Resources/data.json)。
 
 另外，系统行为也不总是那么符合预期。
 
