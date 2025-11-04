@@ -42,7 +42,7 @@ final class EventListView: NSView {
 
   /**
    Update the event list with new events.
-   If events is empty, the entire view will be hidden.
+   If events is empty or all events are past, the entire view will be hidden.
    */
   func updateEvents(_ events: [EKCalendarItem]) {
     // Clear existing event rows
@@ -52,6 +52,14 @@ final class EventListView: NSView {
     if events.isEmpty {
       isHidden = true
       Logger.log(.info, "EventListView.updateEvents: no events, hiding view")
+      return
+    }
+
+    // Hide entire view if all events are past
+    let pastEvents = events.filter { isEventPast($0) }
+    if pastEvents.count == events.count {
+      isHidden = true
+      Logger.log(.info, "EventListView.updateEvents: all \(events.count) events are past, hiding view")
       return
     }
 
@@ -163,11 +171,6 @@ private extension EventListView {
       userInfo: nil
     )
     containerView.addTrackingArea(trackingArea)
-
-    // Apply gray effect for past events
-    if isEventPast(event) {
-      containerView.alphaValue = AlphaLevels.tertiary
-    }
 
     return containerView
   }

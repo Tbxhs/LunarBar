@@ -275,11 +275,11 @@ private extension AppMainVC {
       dateGridView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: margin),
       dateGridView.topAnchor.constraint(equalTo: weekdayView.bottomAnchor, constant: Constants.dateGridViewMarginTop),
       dateGridView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -margin),
-      dateGridView.heightAnchor.constraint(equalToConstant: dateGridHeight),
+      dateGridView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -margin),
 
-      // Event list view positioned directly below date grid (no bottom constraint)
+      // Event list view positioned directly below date grid (with spacing)
       eventListView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: margin),
-      eventListView.topAnchor.constraint(equalTo: dateGridView.bottomAnchor),
+      eventListView.topAnchor.constraint(equalTo: dateGridView.bottomAnchor, constant: 8),
       eventListView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -margin),
     ])
   }
