@@ -18,144 +18,39 @@ extension AppMainVC {
     @MainActor static let menuIconSize: Double = AppDesign.menuIconSize
   }
 
-  var menuItemDatePicker: NSMenuItem {
-    let menu = NSMenu()
-    let current = Calendar.solar.year(from: monthDate)
+  // MARK: - Flattened Menu Items
 
-    // Quick picker that supports 12 years around the current year
-    for year in (current - 6)...(current + 6) {
-      let item = menu.addItem(withTitle: String(year))
-      item.submenu = NSMenu()
-
-      // Insert each month as a submenu
-      for (month, title) in Calendar.solar.monthSymbols.enumerated() {
-        item.submenu?.addItem(withTitle: title) {
-          guard let date = DateComponents(
-            calendar: Calendar.solar,
-            year: year,
-            month: month + 1 // Index is zero-based but month number is human friendly
-          ).date else {
-            return Logger.assertFail("Failed to generate date for: \(year), \(month)")
-          }
-
-          self.updateCalendar(targetDate: date)
-        }
-      }
-    }
-
-    menu.addSeparator()
-
-    // Full-fledged picker that supports any year
-    menu.addItem({ [weak self] in
-      let picker = NSDatePicker()
-      if #available(macOS 26.0, *) {
-        picker.prefersCompactControlSizeMetrics = true
-      }
-
-      picker.locale = Locale(identifier: Localized.General.locale)
-      picker.isBezeled = false
-      picker.isBordered = false
-      picker.datePickerStyle = .textFieldAndStepper
-      picker.datePickerElements = .yearMonth
-      picker.translatesAutoresizingMaskIntoConstraints = false
-      picker.dateValue = self?.monthDate ?? .now
-      picker.sizeToFit()
-
-      picker.addAction { [weak picker] in
-        guard let date = picker?.dateValue else {
-          return
-        }
-
-        self?.updateCalendar(targetDate: date)
-      }
-
-      let wrapper = NSView(frame: CGRect(origin: .zero, size: CGSize(width: 0, height: picker.frame.height)))
-      wrapper.autoresizingMask = .width
-      wrapper.addSubview(picker)
-
-      NSLayoutConstraint.activate([
-        picker.centerXAnchor.constraint(equalTo: wrapper.centerXAnchor),
-        picker.centerYAnchor.constraint(equalTo: wrapper.centerYAnchor),
-      ])
-
-      // Inside a submenu to avoid keyboard navigation conflicts
-      let menu = NSMenu()
-      menu.addItem({
-        let item = NSMenuItem()
-        item.view = wrapper
-
-        return item
-      }())
-
-      let item = NSMenuItem(title: Localized.UI.menuTitleEnterMonth)
-      item.submenu = menu
-      return item
-    }())
-
-    let item = NSMenuItem(title: Localized.UI.menuTitleGotoMonth)
-    item.submenu = menu
-    return item
-  }
-
-  var menuItemAppearance: NSMenuItem {
+  var menuItemMenuBarIcon: NSMenuItem {
     let menu = NSMenu()
 
-    // Option to use the "legacy" design
-    if #available(macOS 26.0, *) {
-      menu.addItem({
-        let item = NSMenuItem(title: Localized.UI.menuTitleClassicInterface)
-        item.image = .with(symbolName: Icons.mustacheFill, pointSize: MenuConstants.menuIconSize)
-        item.setOn(AppPreferences.General.classicInterface)
-
-        item.addAction {
-          AppPreferences.General.classicInterface.toggle()
-        }
-
-        return item
-      }())
-
-      menu.addSeparator()
-    }
-
-    // Icon styles
-    menu.addItem({
-      let item = NSMenuItem(title: Localized.UI.menuTitleMenuBarIcon)
-      item.isEnabled = false
-
-      if #available(macOS 26.0, *) {
-        // To improve the text alignment
-        item.image = .with(symbolName: Icons.menubarRectangle, pointSize: MenuConstants.menuIconSize)
-      }
-
-      return item
-    }())
-
+    // Filled Date
     menu.addItem(createDateIconItem(
       style: .filled,
       title: Localized.UI.menuTitleFilledDate,
       isOn: AppPreferences.General.menuBarIcon == .filledDate,
-      action: AppPreferences.General.menuBarIcon = .filledDate,
+      action: AppPreferences.General.menuBarIcon = .filledDate
     ))
 
+    // Outlined Date
     menu.addItem(createDateIconItem(
       style: .outlined,
       title: Localized.UI.menuTitleOutlinedDate,
       isOn: AppPreferences.General.menuBarIcon == .outlinedDate,
-      action: AppPreferences.General.menuBarIcon = .outlinedDate,
+      action: AppPreferences.General.menuBarIcon = .outlinedDate
     ))
 
+    // Calendar Icon
     menu.addItem({
       let item = NSMenuItem(title: Localized.UI.menuTitleCalendarIcon)
       item.image = AppIconFactory.createCalendarIcon(pointSize: MenuConstants.menuIconSize)
       item.setOn(AppPreferences.General.menuBarIcon == .calendar)
-
       item.addAction {
         AppPreferences.General.menuBarIcon = .calendar
       }
-
       return item
     }())
 
+    // System Symbol
     menu.addItem(createCustomIconItem(
       item: {
         let item = NSMenuItem(title: Localized.UI.menuTitleSystemSymbol)
@@ -171,17 +66,17 @@ extension AppMainVC {
         return alert
       }(),
       explanation: Localized.UI.alertExplanationSetSymbolName,
-      initialValue: AppPreferences.General.systemSymbolName,
+      initialValue: AppPreferences.General.systemSymbolName
     ) { symbolName in
       guard NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) != nil else {
         return false
       }
-
       AppPreferences.General.systemSymbolName = symbolName
       AppPreferences.General.menuBarIcon = .systemSymbol
       return true
     })
 
+    // Custom Format
     menu.addItem(createCustomIconItem(
       item: {
         let item = NSMenuItem(title: Localized.UI.menuTitleCustomFormat)
@@ -197,20 +92,25 @@ extension AppMainVC {
         return alert
       }(),
       explanation: Localized.UI.alertExplanationSetDateFormat,
-      initialValue: AppPreferences.General.customDateFormat,
+      initialValue: AppPreferences.General.customDateFormat
     ) { dateFormat in
       guard !dateFormat.isEmpty else {
         return false
       }
-
       AppPreferences.General.customDateFormat = dateFormat
       AppPreferences.General.menuBarIcon = .custom
       return true
     })
 
-    menu.addSeparator()
+    let item = NSMenuItem(title: Localized.UI.menuTitleMenuBarIcon)
+    item.submenu = menu
+    return item
+  }
 
-    // Dark mode preferences
+  var menuItemAppearance: NSMenuItem {
+    let menu = NSMenu()
+
+    // Color Scheme
     menu.addItem(withTitle: Localized.UI.menuTitleColorScheme).isEnabled = false
     [
       (Localized.UI.menuTitleSystem, Appearance.system),
@@ -225,7 +125,7 @@ extension AppMainVC {
 
     menu.addSeparator()
 
-    // Content scale preferences
+    // Content Scale
     menu.addItem(withTitle: Localized.UI.menuTitleContentScale).isEnabled = false
     [
       (Localized.UI.menuTitleScaleDefault, ContentScale.default),
@@ -246,7 +146,7 @@ extension AppMainVC {
 
     menu.addSeparator()
 
-    // Accessibility options
+    // Accessibility Options
     menu.addItem(withTitle: Localized.UI.menuTitleReduceMotion) { [weak self] in
       AppPreferences.Accessibility.reduceMotion.toggle()
       self?.popover?.animates = !AppPreferences.Accessibility.reduceMotion
@@ -261,6 +161,7 @@ extension AppMainVC {
 
     menu.addSeparator()
 
+    // Pin on Top
     menu.addItem({
       let item = NSMenuItem(title: Localized.UI.menuTitlePinOnTop)
       item.addAction { [weak self] in
@@ -454,6 +355,23 @@ extension AppMainVC {
     return item
   }
 
+  var menuItemAboutAndHelp: NSMenuItem {
+    let menu = NSMenu()
+
+    menu.addItem(menuItemAboutLunarBar)
+    menu.addItem(menuItemGitHub)
+
+    menu.addSeparator()
+
+    menu.addItem(menuItemCheckForUpdates)
+
+    let item = NSMenuItem(title: Localized.UI.menuTitleAboutAndHelp)
+    item.submenu = menu
+    return item
+  }
+
+  // MARK: - Helper Methods
+
   func createDateIconItem(
     style: DateIconStyle,
     title: String,
@@ -534,214 +452,5 @@ extension AppMainVC {
 
   func closePopover() {
     popover?.close()
-  }
-
-  // MARK: - Refactored Menu Items
-
-  var menuItemPreferences: NSMenuItem {
-    let menu = NSMenu()
-
-    // Menu Bar Icon submenu
-    menu.addItem(menuItemMenuBarIcon)
-
-    // Color Scheme submenu
-    menu.addItem(menuItemColorScheme)
-
-    // Content Scale submenu
-    menu.addItem(menuItemContentScale)
-
-    menu.addSeparator()
-
-    // Accessibility submenu
-    menu.addItem(menuItemAccessibility)
-
-    menu.addSeparator()
-
-    // Classic Interface (macOS 26.0+)
-    if #available(macOS 26.0, *) {
-      let item = NSMenuItem(title: Localized.UI.menuTitleClassicInterface)
-      item.setOn(AppPreferences.General.classicInterface)
-      item.addAction {
-        AppPreferences.General.classicInterface.toggle()
-      }
-      menu.addItem(item)
-    }
-
-    // Pin on Top
-    let pinItem = NSMenuItem(title: Localized.UI.menuTitlePinOnTop)
-    pinItem.addAction { [weak self] in
-      self?.togglePinnedOnTop()
-    }
-    pinItem.keyEquivalent = "p"
-    pinItem.keyEquivalentModifierMask = []
-    pinItem.setOn(pinnedOnTop)
-    menu.addItem(pinItem)
-
-    let item = NSMenuItem(title: Localized.UI.menuTitlePreferences)
-    item.submenu = menu
-    return item
-  }
-
-  var menuItemAboutAndHelp: NSMenuItem {
-    let menu = NSMenu()
-
-    menu.addItem(menuItemAboutLunarBar)
-    menu.addItem(menuItemGitHub)
-
-    menu.addSeparator()
-
-    menu.addItem(menuItemCheckForUpdates)
-
-    let item = NSMenuItem(title: Localized.UI.menuTitleAboutAndHelp)
-    item.submenu = menu
-    return item
-  }
-
-  // MARK: - Submenu Items for Preferences
-
-  private var menuItemMenuBarIcon: NSMenuItem {
-    let menu = NSMenu()
-
-    menu.addItem(createDateIconItem(
-      style: .filled,
-      title: Localized.UI.menuTitleFilledDate,
-      isOn: AppPreferences.General.menuBarIcon == .filledDate,
-      action: AppPreferences.General.menuBarIcon = .filledDate
-    ))
-
-    menu.addItem(createDateIconItem(
-      style: .outlined,
-      title: Localized.UI.menuTitleOutlinedDate,
-      isOn: AppPreferences.General.menuBarIcon == .outlinedDate,
-      action: AppPreferences.General.menuBarIcon = .outlinedDate
-    ))
-
-    menu.addItem({
-      let item = NSMenuItem(title: Localized.UI.menuTitleCalendarIcon)
-      item.image = AppIconFactory.createCalendarIcon(pointSize: MenuConstants.menuIconSize)
-      item.setOn(AppPreferences.General.menuBarIcon == .calendar)
-      item.addAction {
-        AppPreferences.General.menuBarIcon = .calendar
-      }
-      return item
-    }())
-
-    menu.addItem(createCustomIconItem(
-      item: {
-        let item = NSMenuItem(title: Localized.UI.menuTitleSystemSymbol)
-        item.image = .with(symbolName: Icons.gear, pointSize: MenuConstants.menuIconSize)
-        item.setOn(AppPreferences.General.menuBarIcon == .systemSymbol)
-        return item
-      }(),
-      alert: {
-        let alert = NSAlert()
-        alert.messageText = Localized.UI.alertMessageSetSymbolName
-        alert.addButton(withTitle: Localized.UI.alertButtonTitleApplyChanges)
-        alert.addButton(withTitle: Localized.General.cancel)
-        return alert
-      }(),
-      explanation: Localized.UI.alertExplanationSetSymbolName,
-      initialValue: AppPreferences.General.systemSymbolName
-    ) { symbolName in
-      guard NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) != nil else {
-        return false
-      }
-      AppPreferences.General.systemSymbolName = symbolName
-      AppPreferences.General.menuBarIcon = .systemSymbol
-      return true
-    })
-
-    menu.addItem(createCustomIconItem(
-      item: {
-        let item = NSMenuItem(title: Localized.UI.menuTitleCustomFormat)
-        item.image = .with(symbolName: Icons.wandAndSparkles, pointSize: MenuConstants.menuIconSize)
-        item.setOn(AppPreferences.General.menuBarIcon == .custom)
-        return item
-      }(),
-      alert: {
-        let alert = NSAlert()
-        alert.messageText = Localized.UI.alertMessageSetDateFormat
-        alert.addButton(withTitle: Localized.UI.alertButtonTitleApplyChanges)
-        alert.addButton(withTitle: Localized.General.cancel)
-        return alert
-      }(),
-      explanation: Localized.UI.alertExplanationSetDateFormat,
-      initialValue: AppPreferences.General.customDateFormat
-    ) { dateFormat in
-      guard !dateFormat.isEmpty else {
-        return false
-      }
-      AppPreferences.General.customDateFormat = dateFormat
-      AppPreferences.General.menuBarIcon = .custom
-      return true
-    })
-
-    let item = NSMenuItem(title: Localized.UI.menuTitleMenuBarIcon)
-    item.submenu = menu
-    return item
-  }
-
-  private var menuItemColorScheme: NSMenuItem {
-    let menu = NSMenu()
-
-    [
-      (Localized.UI.menuTitleSystem, Appearance.system),
-      (Localized.UI.menuTitleLight, Appearance.light),
-      (Localized.UI.menuTitleDark, Appearance.dark),
-    ].forEach { (title: String, appearance: Appearance) in
-      menu.addItem(withTitle: title) { [weak self] in
-        self?.updateAppearance(appearance)
-      }
-      .setOn(AppPreferences.General.appearance == appearance)
-    }
-
-    let item = NSMenuItem(title: Localized.UI.menuTitleColorScheme)
-    item.submenu = menu
-    return item
-  }
-
-  private var menuItemContentScale: NSMenuItem {
-    let menu = NSMenu()
-
-    [
-      (Localized.UI.menuTitleScaleDefault, ContentScale.default),
-      (Localized.UI.menuTitleScaleRoomy, ContentScale.roomy),
-    ].forEach { (title: String, scale: ContentScale) in
-      menu.addItem(withTitle: title) { [weak self] in
-        AppPreferences.General.contentScale = scale
-        self?.closePopover()
-
-        if let delegate = NSApp.delegate as? AppDelegate {
-          delegate.openPanel()
-        } else {
-          Logger.assertFail("Unexpected app delegate: \(String(describing: NSApp.delegate))")
-        }
-      }
-      .setOn(AppPreferences.General.contentScale == scale)
-    }
-
-    let item = NSMenuItem(title: Localized.UI.menuTitleContentScale)
-    item.submenu = menu
-    return item
-  }
-
-  private var menuItemAccessibility: NSMenuItem {
-    let menu = NSMenu()
-
-    menu.addItem(withTitle: Localized.UI.menuTitleReduceMotion) { [weak self] in
-      AppPreferences.Accessibility.reduceMotion.toggle()
-      self?.popover?.animates = !AppPreferences.Accessibility.reduceMotion
-    }
-    .setOn(AppPreferences.Accessibility.reduceMotion)
-
-    menu.addItem(withTitle: Localized.UI.menuTitleReduceTransparency) { [weak self] in
-      AppPreferences.Accessibility.reduceTransparency.toggle()
-      self?.popover?.applyMaterial(AppPreferences.Accessibility.popoverMaterial)
-    }
-    .setOn(AppPreferences.Accessibility.reduceTransparency)
-
-    let item = NSMenuItem(title: Localized.UI.menuTitleAccessibility)
-    item.submenu = menu
-    return item
   }
 }

@@ -413,15 +413,12 @@ private extension AppDelegate {
       return
     }
 
-    // Create the refactored context menu with 7 top-level items
+    // Create the simplified context menu with 5 top-level items
     let menu = NSMenu()
-    menu.addItem(vc.menuItemDatePicker)
+    menu.addItem(vc.menuItemMenuBarIcon)
     menu.addItem(vc.menuItemAppearance)
     menu.addItem(vc.menuItemCalendars)
-    menu.addItem(vc.menuItemPublicHolidays)
     menu.addItem(vc.menuItemLaunchAtLogin)
-    menu.addSeparator()
-    menu.addItem(vc.menuItemPreferences)
     menu.addSeparator()
     menu.addItem(vc.menuItemAboutAndHelp)
     menu.addSeparator()
