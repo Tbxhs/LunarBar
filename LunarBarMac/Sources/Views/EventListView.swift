@@ -26,7 +26,7 @@ final class EventListView: NSView {
       return NSSize(width: NSView.noIntrinsicMetric, height: 0)
     }
     let eventCount = storedEvents.count
-    let height = Constants.topPadding + Constants.bottomPadding + Double(eventCount) * Constants.rowHeight + 1 + 8 // separator + margin
+    let height = Constants.topPadding + Constants.bottomPadding + Double(eventCount) * Constants.rowHeight + 1 + 4 // separator + top margin
     return NSSize(width: NSView.noIntrinsicMetric, height: height)
   }
 
@@ -95,11 +95,14 @@ private extension EventListView {
     stackView.translatesAutoresizingMaskIntoConstraints = false
     addSubview(stackView)
 
+    let margin = AppDesign.contentMargin
+    let spacing = AppDesign.dateCellSpacing
+    let separatorInset = margin + spacing * 0.5 + 1  // Align with DateGrid cell content area
     NSLayoutConstraint.activate([
-      // Separator at top
-      separatorView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-      separatorView.leadingAnchor.constraint(equalTo: leadingAnchor),
-      separatorView.trailingAnchor.constraint(equalTo: trailingAnchor),
+      // Separator at top aligned with cell content
+      separatorView.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+      separatorView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: separatorInset),
+      separatorView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -separatorInset),
       separatorView.heightAnchor.constraint(equalToConstant: 1),
 
       // Stack view below separator
@@ -255,7 +258,7 @@ private enum Constants {
   static let dotSpacing: Double = 8
   static let labelSpacing: Double = 16
   static let horizontalPadding: Double = 12
-  static let topPadding: Double = 8
+  static let topPadding: Double = 6
   static let bottomPadding: Double = 8
   static let maxHeight: Double = 200  // Maximum height for event list
   static let dateFormatter: DateFormatter = {

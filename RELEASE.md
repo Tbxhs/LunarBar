@@ -9,8 +9,8 @@ To release a new version of LunarBar:
 Edit `Build.xcconfig` and bump the version:
 
 ```
-MARKETING_VERSION = 1.9.2
-CURRENT_PROJECT_VERSION = 20
+MARKETING_VERSION = 1.9.4
+CURRENT_PROJECT_VERSION = 22
 ```
 
 ### 2. Update Changelog
@@ -18,7 +18,7 @@ CURRENT_PROJECT_VERSION = 20
 Add your changes to `CHANGELOG.md`:
 
 ```markdown
-## [1.9.2] - 2025-06-14
+## [1.9.4] - 2025-11-05
 - Your new features
 - Bug fixes
 - Improvements
@@ -28,7 +28,7 @@ Add your changes to `CHANGELOG.md`:
 
 ```bash
 git add Build.xcconfig CHANGELOG.md
-git commit -m "Bump version to 1.9.2"
+git commit -m "Bump version to 1.9.4"
 git push origin main
 ```
 
@@ -41,6 +41,7 @@ git push origin main
 This will automatically:
 - ✅ Clean and build Release version
 - ✅ Create DMG installer (in `dist/` folder)
+- ✅ Arrange the DMG window with “App → Applications” drag layout and centered icons
 - ✅ Create and push Git tag
 - ✅ Create GitHub Release with DMG attachment
 
@@ -98,10 +99,10 @@ git push origin "v${VERSION}"
 
 Visit: https://github.com/Tbxhs/LunarBar/releases/new
 
-- **Choose a tag**: v1.9.2
-- **Release title**: 1.9.2 (⚠️ no "v" prefix!)
+- **Choose a tag**: v1.9.4
+- **Release title**: 1.9.4 (⚠️ no "v" prefix!)
 - **Description**: Copy from CHANGELOG.md
-- **Attach binary**: Upload `dist/LunarBar-1.9.2.dmg`
+- **Attach binary**: Upload `dist/LunarBar-1.9.4.dmg`
 - Click **Publish release**
 
 ---
@@ -135,14 +136,14 @@ If you need to overwrite a tag:
 
 ```bash
 # Delete local tag
-git tag -d v1.9.2
+git tag -d v1.9.4
 
 # Delete remote tag
-git push --delete origin v1.9.2
+git push --delete origin v1.9.4
 
 # Create new tag
-git tag v1.9.2
-git push origin v1.9.2
+git tag v1.9.4
+git push origin v1.9.4
 ```
 
 ---
@@ -156,5 +157,5 @@ The app's auto-updater is configured to check:
 **Important**: The GitHub release **title** must match `MARKETING_VERSION` exactly (no "v" prefix).
 
 Example:
-- ✅ Tag: `v1.9.2`, Title: `1.9.2` ← Correct
-- ❌ Tag: `v1.9.2`, Title: `v1.9.2` ← Wrong (updater won't detect)
+- ✅ Tag: `v1.9.4`, Title: `1.9.4` ← Correct
+- ❌ Tag: `v1.9.4`, Title: `v1.9.4` ← Wrong (updater won't detect)

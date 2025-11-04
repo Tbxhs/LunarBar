@@ -205,10 +205,10 @@ private extension DateGridView {
       )
     )
     item.contentInsets = NSDirectionalEdgeInsets(
-      top: 0,
-      leading: spacing * 0.5,
-      bottom: 0,
-      trailing: spacing * 0.5
+      top: spacing * 0.5,
+      leading: spacing * 0.5 + 1,
+      bottom: spacing * 0.5,
+      trailing: spacing * 0.5 + 1
     )
 
     let group = NSCollectionLayoutGroup.horizontal(
@@ -220,11 +220,11 @@ private extension DateGridView {
     )
 
     let section = NSCollectionLayoutSection(group: group)
-    section.interGroupSpacing = spacing
+    section.interGroupSpacing = 0
     section.contentInsets = NSDirectionalEdgeInsets(
       top: 0,
       leading: 0,
-      bottom: spacing,
+      bottom: 1,  // Adjusted to match left/right margins (2.5pt total with item bottom inset)
       trailing: 0
     )
     let layout = NSCollectionViewCompositionalLayout(section: section)

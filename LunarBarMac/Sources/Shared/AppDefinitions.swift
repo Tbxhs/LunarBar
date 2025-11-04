@@ -202,6 +202,7 @@ enum Icons {
   static let circle = "circle"
   static let exclamationmarkTriangle = "exclamationmark.triangle"
   static let gear = "gear"
+  static let locationFill = "location.fill"
   static let menubarRectangle = "menubar.rectangle"
   static let mustacheFill = "mustache.fill"
   static let wandAndSparkles = "wand.and.sparkles"
@@ -210,6 +211,7 @@ enum Icons {
 enum Colors {
   static let controlAccent: NSColor = .controlAccentColor
   static let primaryLabel: NSColor = .labelColor
+  static let secondaryLabel: NSColor = .secondaryLabelColor
   static let systemTeal: NSColor = .systemTeal
   static let systemOrange: NSColor = .systemOrange
 }

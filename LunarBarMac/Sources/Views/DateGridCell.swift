@@ -291,17 +291,28 @@ extension DateGridCell {
     let isDateToday = Calendar.solar.isDate(cellDate, inSameDayAs: currentDate)
 
     if let monthDate, Calendar.solar.month(from: monthDate) == solarComponents.month {
+      // Current month: use primary color
+      solarLabel.textColor = Colors.primaryLabel
+      lunarLabel.textColor = Colors.primaryLabel
+
       if Calendar.solar.isDateInWeekend(cellDate) && !isDateToday {
+        // Current month weekend: 70% alpha (medium strength)
         solarLabel.alphaValue = AlphaLevels.secondary
       } else {
+        // Current month weekday: 100% alpha (strongest)
         solarLabel.alphaValue = AlphaLevels.primary
       }
 
       // Intentional, secondary alpha is used only for labels at weekends
       eventView.alphaValue = AlphaLevels.primary
     } else {
-      solarLabel.alphaValue = AlphaLevels.tertiary
-      eventView.alphaValue = AlphaLevels.tertiary
+      // Non-current month: use secondary color with reduced alpha (weakest)
+      solarLabel.textColor = Colors.secondaryLabel
+      lunarLabel.textColor = Colors.secondaryLabel
+      solarLabel.alphaValue = 0.6  // 60% alpha to ensure weaker than current month weekend
+
+      // Event dots and holiday indicator use lower opacity
+      eventView.alphaValue = 0.5
     }
 
     lunarLabel.alphaValue = solarLabel.alphaValue
@@ -396,7 +407,7 @@ private extension DateGridCell {
 
       // focusRingView 设置为正方形，居中显示
       focusRingView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
-      focusRingView.centerYAnchor.constraint(equalTo: highlightView.centerYAnchor),
+      focusRingView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
       focusRingView.widthAnchor.constraint(equalTo: focusRingView.heightAnchor),  // 宽高相等=正方形
       focusRingView.widthAnchor.constraint(equalTo: highlightView.widthAnchor),
       focusRingView.heightAnchor.constraint(lessThanOrEqualTo: highlightView.heightAnchor),

@@ -157,7 +157,9 @@ extension AppMainVC {
     // Update view and popover size to accommodate event list
     let baseSize = Self.desiredContentSize
     let eventListHeight = eventListView.intrinsicContentSize.height
-    let newSize = CGSize(width: baseSize.width, height: baseSize.height + eventListHeight)
+    // Note: eventListHeight is in container's coordinate (unscaled), need to convert to display size
+    let contentScale = AppPreferences.General.contentScale.rawValue
+    let newSize = CGSize(width: baseSize.width, height: baseSize.height + eventListHeight * contentScale)
 
     // Use animation for smooth size transitions (unless user prefers reduced motion)
     if AppPreferences.Accessibility.reduceMotion {
@@ -167,7 +169,7 @@ extension AppMainVC {
     } else {
       // Smooth animation for size changes
       NSAnimationContext.runAnimationGroup { context in
-        context.duration = 0.25
+        context.duration = 0.35
         context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
         view.animator().setFrameSize(newSize)
@@ -268,18 +270,21 @@ private extension AppMainVC {
     view.addSubview(eventListView)
 
     // Calculate fixed height for dateGridView to maintain its size
-    let dateGridHeight = Self.desiredContentSize.height - margin - Constants.headerViewHeight - Constants.weekdayViewHeight - Constants.dateGridViewMarginTop - margin
+    // Note: ScalableView's container size is desiredContentSize / contentScale
+    let contentScale = AppPreferences.General.contentScale.rawValue
+    let actualContainerHeight = Self.desiredContentSize.height / contentScale
+    let dateGridHeight = actualContainerHeight - margin - Constants.headerViewHeight - Constants.weekdayViewHeight - Constants.dateGridViewMarginTop - margin
 
     NSLayoutConstraint.activate([
       // Date grid view with fixed height to maintain original size
       dateGridView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: margin),
       dateGridView.topAnchor.constraint(equalTo: weekdayView.bottomAnchor, constant: Constants.dateGridViewMarginTop),
       dateGridView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -margin),
-      dateGridView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -margin),
+      dateGridView.heightAnchor.constraint(equalToConstant: dateGridHeight),
 
-      // Event list view positioned directly below date grid (with spacing)
+      // Event list view positioned directly below date grid (no spacing)
       eventListView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: margin),
-      eventListView.topAnchor.constraint(equalTo: dateGridView.bottomAnchor, constant: 8),
+      eventListView.topAnchor.constraint(equalTo: dateGridView.bottomAnchor, constant: 0),
       eventListView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -margin),
     ])
   }

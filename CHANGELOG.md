@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.9.4] - 2025-11-05
+- Simplified the right-click menu layout to surface the most common actions with fewer taps.
+- Resolved menu bar icon rendering bugs so custom icon styles now display consistently.
+- Tuned calendar spacing to keep the popover content aligned at every scale.
+- Updated the DMG packaging to restore the classic “drag to Applications” layout with centered icons.
+
+## [1.9.3] - 2025-11-04
+- Added a right-click context menu to the calendar for faster access to navigation and settings.
+- Replaced the legacy Actions button with the new menu, reducing visual clutter.
+- Refined various UX details and polished wording across localized menu items.
+
 ## [1.9.2] - 2025-11-03
 - Improved event list display by removing strikethrough styling for completed tasks.
 - Added visual distinction for past events with reduced opacity (gray appearance).
@@ -16,4 +27,3 @@
 ## [1.9.0] - 2025-06-12
 - Switched the menu bar status item to a fixed `M月d日 EEE` format with Chinese localization.
 - Simplified the status item presentation by removing the legacy icon and relying on text-only display.
-

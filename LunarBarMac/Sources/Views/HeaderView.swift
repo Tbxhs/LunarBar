@@ -52,8 +52,9 @@ final class HeaderView: NSView {
 
   private lazy var actionsButton: ImageButton = {
     let button = createButton(
-      symbolName: Icons.calendarBadgeClock,
-      accessibilityLabel: Localized.UI.buttonTitleGotoToday
+      symbolName: Icons.locationFill,
+      accessibilityLabel: Localized.UI.buttonTitleGotoToday,
+      tintColor: Colors.controlAccent  // Always use accent color (blue)
     )
 
     button.addAction { [weak self] in
@@ -65,6 +66,7 @@ final class HeaderView: NSView {
     }
 
     button.toolTip = Localized.UI.buttonTitleGotoToday
+    button.alphaValue = 0  // Hidden by default
     return button
   }()
 
@@ -166,6 +168,13 @@ extension HeaderView {
     }
 
     previousDate = date
+    updateTodayButtonState(for: date)
+  }
+
+  func updateTodayButtonState(for date: Date) {
+    let isCurrentMonth = Calendar.solar.isDate(date, inSameMonthAs: Date.now)
+    // Hide button when viewing current month, show when viewing other months
+    actionsButton.alphaValue = isCurrentMonth ? 0 : 1
   }
 
   func showClickEffect(for identifier: ButtonIdentifier) {
@@ -199,13 +208,13 @@ private extension HeaderView {
     static let dateFormatter: DateFormatter = .localizedMonth
   }
 
-  func createButton(symbolName: String, accessibilityLabel: String) -> ImageButton {
+  func createButton(symbolName: String, accessibilityLabel: String, tintColor: NSColor? = Colors.primaryLabel) -> ImageButton {
     ImageButton(
       symbolName: symbolName,
       sizeDelta: AppDesign.modernStyle ? 1 : 0,
       cornerRadius: AppDesign.cellCornerRadius,
       highlightColorProvider: { .highlightedBackground },
-      tintColor: Colors.primaryLabel,
+      tintColor: tintColor,
       accessibilityLabel: accessibilityLabel
     )
   }

@@ -25,6 +25,8 @@ fi
 echo -e "${GREEN}📦 Version: ${VERSION}${NC}"
 echo ""
 
+DERIVED_DATA_DIR="$(pwd)/build/DerivedData"
+
 # Check if tag already exists
 if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
     echo -e "${YELLOW}⚠️  Tag v${VERSION} already exists${NC}"
@@ -43,13 +45,21 @@ echo ""
 
 # Step 2: Clean build
 echo "🧹 Cleaning previous build..."
-xcodebuild clean -project LunarBar.xcodeproj -scheme LunarBarMac -configuration Release > /dev/null 2>&1
-echo -e "${GREEN}✓ Clean complete${NC}"
+set +e
+rm -rf "$DERIVED_DATA_DIR"
+xcodebuild clean -project LunarBar.xcodeproj -scheme LunarBarMac -configuration Release -derivedDataPath "$DERIVED_DATA_DIR"
+XC_CLEAN_STATUS=$?
+set -e
+if [ $XC_CLEAN_STATUS -ne 0 ]; then
+    echo -e "${YELLOW}⚠️  Clean step reported non-zero exit status (${XC_CLEAN_STATUS}), continuing${NC}"
+else
+    echo -e "${GREEN}✓ Clean complete${NC}"
+fi
 echo ""
 
 # Step 3: Build Release
 echo "🔨 Building Release version..."
-xcodebuild -project LunarBar.xcodeproj -scheme LunarBarMac -configuration Release build 2>&1 | grep -E "^\*\*|error:|warning:" || true
+xcodebuild -project LunarBar.xcodeproj -scheme LunarBarMac -configuration Release build -derivedDataPath "$DERIVED_DATA_DIR" 2>&1 | grep -E "^\*\*|error:|warning:" || true
 if [ ${PIPESTATUS[0]} -ne 0 ]; then
     echo -e "${RED}❌ Build failed${NC}"
     exit 1
@@ -62,10 +72,10 @@ echo "📀 Creating DMG package..."
 mkdir -p dist
 rm -f "dist/LunarBar-${VERSION}.dmg"
 
-APP_PATH="${HOME}/Library/Developer/Xcode/DerivedData/LunarBar-eyfufevfuojcmdfplqukwctffnxl/Build/Products/Release/LunarBar.app"
+APP_PATH="${DERIVED_DATA_DIR}/Build/Products/Release/LunarBar.app"
 if [ ! -d "$APP_PATH" ]; then
     # Try to find the app in any DerivedData folder
-    APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "LunarBar.app" -path "*/Build/Products/Release/*" | head -1)
+    APP_PATH=$(find "$DERIVED_DATA_DIR" ~/Library/Developer/Xcode/DerivedData -name "LunarBar.app" -path "*/Build/Products/Release/*" 2>/dev/null | head -1)
     if [ -z "$APP_PATH" ]; then
         echo -e "${RED}❌ Could not find LunarBar.app${NC}"
         exit 1
@@ -83,13 +93,60 @@ cp -R "$APP_PATH" "$DMG_TEMP/"
 # Create symbolic link to Applications folder
 ln -s /Applications "$DMG_TEMP/Applications"
 
-# Create DMG from temp directory
-hdiutil create -volname "LunarBar" -srcfolder "$DMG_TEMP" -ov -format UDZO "dist/LunarBar-${VERSION}.dmg" > /dev/null
+# Create a writable DMG from temp directory
+DMG_RW="dist/LunarBar-${VERSION}-temp.dmg"
+FINAL_DMG="dist/LunarBar-${VERSION}.dmg"
+rm -f "$DMG_RW" "$FINAL_DMG"
+hdiutil create -volname "LunarBar" -srcfolder "$DMG_TEMP" -ov -format UDRW "$DMG_RW" > /dev/null
+
+echo "🎨 Configuring DMG window layout..."
+MOUNT_OUTPUT=$(hdiutil attach -readwrite -noverify -noautoopen "$DMG_RW")
+MOUNT_DEVICE=$(echo "$MOUNT_OUTPUT" | awk '/\/Volumes/ {print $1}')
+MOUNT_POINT=$(echo "$MOUNT_OUTPUT" | awk '/\/Volumes/ {print $3}')
+
+if [ -z "$MOUNT_DEVICE" ] || [ -z "$MOUNT_POINT" ]; then
+    echo -e "${RED}❌ Failed to mount DMG for customization${NC}"
+    exit 1
+fi
+
+/usr/bin/osascript <<'EOF'
+tell application "Finder"
+  tell disk "LunarBar"
+    open
+    set current view of container window to icon view
+    set toolbar visible of container window to false
+    set statusbar visible of container window to false
+    set bounds of container window to {120, 120, 720, 420}
+    set icon size of icon view options of container window to 120
+    set arrangement of icon view options of container window to not arranged
+    try
+      set position of item "LunarBar.app" of container window to {170, 200}
+    end try
+    try
+      set position of item "Applications" of container window to {500, 200}
+    end try
+    delay 1
+    close
+    delay 0.2
+    open
+    delay 1
+    update without registering applications
+  end tell
+end tell
+EOF
+
+# Give Finder a moment to finish writing .DS_Store
+sleep 2
+
+# Detach the DMG and convert to compressed format
+hdiutil detach "$MOUNT_POINT" > /dev/null
+hdiutil convert "$DMG_RW" -format UDZO -imagekey zlib-level=9 -o "$FINAL_DMG" > /dev/null
+rm -f "$DMG_RW"
 
 # Clean up temp directory
 rm -rf "$DMG_TEMP"
 
-DMG_SIZE=$(ls -lh "dist/LunarBar-${VERSION}.dmg" | awk '{print $5}')
+DMG_SIZE=$(ls -lh "$FINAL_DMG" | awk '{print $5}')
 echo -e "${GREEN}✓ DMG created: ${DMG_SIZE}${NC}"
 echo ""
 
