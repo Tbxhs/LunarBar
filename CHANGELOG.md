@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.0] - 2025-11-05
+- Refined date selection UI with perfectly circular indicators (40pt fixed size) to eliminate overlap.
+- Unified the visual appearance of today's marker and selected date rings for consistency.
+- Softened calendar event dot brightness for a more subtle visual presentation.
+- Added 2026 public holiday data for Mainland China.
+- Filtered expired events from the event list to show only current and upcoming items.
+- Fixed update checker to handle empty release notes gracefully.
+
 ## [1.9.4] - 2025-11-05
 - Simplified the right-click menu layout to surface the most common actions with fewer taps.
 - Resolved menu bar icon rendering bugs so custom icon styles now display consistently.

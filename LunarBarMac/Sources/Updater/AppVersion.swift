@@ -12,6 +12,6 @@ import Foundation
  */
 struct AppVersion: Decodable {
   let name: String
-  let body: String
+  let body: String?
   let htmlUrl: String
 }

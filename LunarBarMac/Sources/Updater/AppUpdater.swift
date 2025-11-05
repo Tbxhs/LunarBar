@@ -119,7 +119,7 @@ private extension AppUpdater {
 
     let alert = NSAlert()
     alert.messageText = String(format: Localized.Updater.newVersionAvailableTitle, newVersion.name)
-    alert.markdownBody = newVersion.body
+    alert.markdownBody = newVersion.body ?? ""
     alert.addButton(withTitle: Localized.General.learnMore)
 
     if explicitly {
