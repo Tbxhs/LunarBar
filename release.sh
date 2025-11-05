@@ -161,7 +161,17 @@ echo ""
 echo "📝 Creating GitHub Release..."
 
 # Extract changelog for this version
-CHANGELOG=$(awk "/## \[${VERSION}\]/,/## \[/" CHANGELOG.md | grep -v "^## \[" | grep -v "^#" | sed '/^$/d' || echo "Release ${VERSION}")
+# Use awk to extract content between version headers, excluding the headers themselves
+CHANGELOG=$(awk "
+  /^## \[${VERSION}\]/ { flag=1; next }
+  /^## \[/ { if (flag) exit }
+  flag && !/^$/ && !/^#/ { print }
+" CHANGELOG.md)
+
+# Fallback if extraction fails
+if [ -z "$CHANGELOG" ]; then
+    CHANGELOG="Release ${VERSION}"
+fi
 
 # Check if gh is authenticated
 if ! gh auth status >/dev/null 2>&1; then
