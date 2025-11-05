@@ -53,8 +53,8 @@ final class HeaderView: NSView {
   private lazy var actionsButton: ImageButton = {
     let button = createButton(
       symbolName: Icons.locationFill,
-      accessibilityLabel: Localized.UI.buttonTitleGotoToday,
-      tintColor: Colors.controlAccent  // Always use accent color (blue)
+      accessibilityLabel: Localized.UI.buttonTitleGotoToday
+      // 使用默认颜色（primaryLabel），与其他按钮保持一致
     )
 
     button.addAction { [weak self] in

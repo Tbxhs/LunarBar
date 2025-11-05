@@ -48,26 +48,21 @@ final class EventListView: NSView {
     // Clear existing event rows
     stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
-    // Hide entire view if no events
-    if events.isEmpty {
-      isHidden = true
-      Logger.log(.info, "EventListView.updateEvents: no events, hiding view")
-      return
-    }
+    // Filter out past events - only show upcoming events
+    let upcomingEvents = events.filter { !isEventPast($0) }
 
-    // Hide entire view if all events are past
-    let pastEvents = events.filter { isEventPast($0) }
-    if pastEvents.count == events.count {
+    // Hide entire view if no upcoming events
+    if upcomingEvents.isEmpty {
       isHidden = true
-      Logger.log(.info, "EventListView.updateEvents: all \(events.count) events are past, hiding view")
+      Logger.log(.info, "EventListView.updateEvents: no upcoming events (total: \(events.count), past: \(events.count - upcomingEvents.count)), hiding view")
       return
     }
 
     isHidden = false
-    Logger.log(.info, "EventListView.updateEvents: rendering \(events.count) events")
+    Logger.log(.info, "EventListView.updateEvents: rendering \(upcomingEvents.count) upcoming events (filtered out \(events.count - upcomingEvents.count) past events)")
 
     // Add event rows (no maximum limit, fully adaptive)
-    events.oldestToNewest.forEach { event in
+    upcomingEvents.oldestToNewest.forEach { event in
       let eventRow = createEventRow(event: event)
       stackView.addArrangedSubview(eventRow)
       NSLayoutConstraint.activate([
@@ -221,10 +216,12 @@ private extension EventListView {
 
 extension EventListView {
   func updateEventsWithStorage(_ events: [EKCalendarItem]) {
-    storedEvents = events
-    updateEvents(events)
+    // Filter out past events before storing
+    let upcomingEvents = events.filter { !isEventPast($0) }
+    storedEvents = upcomingEvents
+    updateEvents(events)  // updateEvents will filter again internally
     invalidateIntrinsicContentSize()
-    Logger.log(.info, "EventListView.updateEventsWithStorage: stored=\(events.count) height=\(self.intrinsicContentSize.height)")
+    Logger.log(.info, "EventListView.updateEventsWithStorage: total=\(events.count) stored=\(upcomingEvents.count) height=\(self.intrinsicContentSize.height)")
   }
 }
 

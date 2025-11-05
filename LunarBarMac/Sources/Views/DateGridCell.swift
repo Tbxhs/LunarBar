@@ -80,9 +80,10 @@ final class DateGridCell: NSCollectionViewItem {
     view.isHidden = true
     view.setAccessibilityHidden(true)
 
-    view.layer?.borderWidth = Constants.focusRingBorderWidth
+    view.layer?.borderWidth = 2.0  // 今日标记边框宽度
     view.layer?.cornerRadius = AppDesign.cellCornerRadius
     view.layer?.cornerCurve = .continuous
+    // 边框颜色在 viewDidLayout 中设置
 
     return view
   }()
@@ -93,8 +94,8 @@ final class DateGridCell: NSCollectionViewItem {
     view.isHidden = true
     view.setAccessibilityHidden(true)
 
-    view.layer?.borderWidth = Constants.selectionRingBorderWidth
-    view.layer?.borderColor = NSColor.systemGreen.cgColor
+    view.layer?.borderWidth = 1.5  // 选中日期边框宽度
+    // 边框颜色在 viewDidLayout 中设置
     view.layer?.cornerRadius = AppDesign.cellCornerRadius
     view.layer?.cornerCurve = .continuous
     view.layer?.backgroundColor = NSColor.clear.cgColor
@@ -102,8 +103,12 @@ final class DateGridCell: NSCollectionViewItem {
     return view
   }()
 
+  // Glass effect views for macOS 26+ (stored as Any to avoid availability issues)
+  private var glassSelectionView: Any?
+  private var glassFocusView: Any?
+
   private let holidayView: NSImageView = {
-    let view = NSImageView(image: Constants.holidayViewImage)
+    let view = NSImageView()
     view.isHidden = true
     view.setAccessibilityHidden(true)
 
@@ -128,21 +133,39 @@ extension DateGridCell {
     super.viewDidLayout()
     containerView.frame = view.bounds
 
-    highlightView.layerBackgroundColor = .highlightedBackground
+    // 完全隐藏 highlightView，不再使用悬停效果
+    highlightView.isHidden = true
 
-    // 设置今日标记为绿色圆形背景
-    focusRingView.layer?.backgroundColor = NSColor.systemGreen.cgColor
+    // 设置今日标记：只有轻微灰色背景，无边框
+    let isDarkMode = view.effectiveAppearance.isDarkMode
+    let todayBackgroundColor = isDarkMode ? NSColor.white.withAlphaComponent(0.08) : NSColor.black.withAlphaComponent(0.05)
+
+    focusRingView.layer?.backgroundColor = todayBackgroundColor.cgColor
     focusRingView.layer?.borderWidth = 0  // 移除边框
+    focusRingView.layer?.borderColor = nil
 
-    // 根据 focusRingView 的实际尺寸设置圆角，让它变成圆形或近似圆形
-    let size = focusRingView.bounds.size
-    let radius = min(size.width, size.height) / 2
+    // 使用固定尺寸的圆角半径，保证完美正圆
+    let radius = Constants.fixedRingSize / 2
     focusRingView.layer?.cornerRadius = radius
 
-    // 设置选中标记为空心圆圈
-    let selectionSize = selectionRingView.bounds.size
-    let selectionRadius = min(selectionSize.width, selectionSize.height) / 2
-    selectionRingView.layer?.cornerRadius = selectionRadius
+    // 设置选中标记为细灰色边框
+    let selectionBorderColor = isDarkMode ? NSColor.white.withAlphaComponent(0.3) : NSColor.black.withAlphaComponent(0.25)
+    selectionRingView.layer?.borderColor = selectionBorderColor.cgColor
+    selectionRingView.layer?.borderWidth = Constants.selectionRingBorderWidth  // 边框宽度
+    selectionRingView.layer?.cornerRadius = radius  // 与 focusRingView 相同半径
+
+    // Update Glass view corner radius and tint on macOS 26+
+    if #available(macOS 26.0, *), AppDesign.modernStyle {
+      // 今日 Glass（稍深）- 配合背景色
+      (glassFocusView as? NSGlassEffectView)?.cornerRadius = radius
+      let todayGlassTint = isDarkMode ? NSColor.white.withAlphaComponent(0.10) : NSColor.black.withAlphaComponent(0.08)
+      (glassFocusView as? NSGlassEffectView)?.tintColor = todayGlassTint
+
+      // 选中日期 Glass（适中）- 配合边框
+      (glassSelectionView as? NSGlassEffectView)?.cornerRadius = radius  // 使用相同半径
+      let selectionGlassTint = isDarkMode ? NSColor.white.withAlphaComponent(0.08) : NSColor.black.withAlphaComponent(0.06)
+      (glassSelectionView as? NSGlassEffectView)?.tintColor = selectionGlassTint
+    }
   }
 }
 
@@ -211,32 +234,43 @@ extension DateGridCell {
     let isDateToday = Calendar.solar.isDate(cellDate, inSameDayAs: currentDate)
     focusRingView.isHidden = !isDateToday
 
-    // Show selection ring for selected non-today dates
-    selectionRingView.isHidden = !(isDateSelected && !isDateToday)
-
-    // 当是今天时，文字显示为白色
-    if isDateToday {
-      solarLabel.textColor = .white
-      lunarLabel.textColor = .white
-    } else {
-      solarLabel.textColor = Colors.primaryLabel
-      lunarLabel.textColor = Colors.primaryLabel
+    // 同步今日 Glass 视图的显示状态 (macOS 26+)
+    if #available(macOS 26.0, *), AppDesign.modernStyle {
+      (glassFocusView as? NSGlassEffectView)?.isHidden = !isDateToday
     }
+
+    // 今日脉冲动画已移除，保持静态效果
+
+    // Show selection ring for selected non-today dates
+    let shouldShowSelection = isDateSelected && !isDateToday
+    selectionRingView.isHidden = !shouldShowSelection
+
+    // 同步选中日期的 Glass 视图 (macOS 26+)
+    if #available(macOS 26.0, *), AppDesign.modernStyle {
+      (glassSelectionView as? NSGlassEffectView)?.isHidden = !shouldShowSelection
+    }
+
+    // 文字颜色保持统一，不因为是今天而改变
+    solarLabel.textColor = Colors.primaryLabel
+    lunarLabel.textColor = Colors.primaryLabel
 
     // Reload event dot views
     eventView.updateEvents(cellEvents)
 
-    // Bookmark for holiday plans
+    // Holiday indicator icons
     switch holidayType {
     case .none:
       holidayView.isHidden = true
+      holidayView.image = nil
       holidayView.contentTintColor = nil
     case .workday:
       holidayView.isHidden = false
-      holidayView.contentTintColor = .systemRed  // 上班日用红色
+      holidayView.image = Constants.workdayIcon  // 补班日：公文包
+      holidayView.contentTintColor = .systemRed
     case .holiday:
       holidayView.isHidden = false
-      holidayView.contentTintColor = .systemGreen  // 休假日用绿色
+      holidayView.image = Constants.holidayIcon  // 放假日：圆点
+      holidayView.contentTintColor = .systemGreen
     }
 
     self.mainInfo = {
@@ -321,15 +355,25 @@ extension DateGridCell {
 
   @discardableResult
   func cancelHighlight() -> Bool {
+    // highlightView 悬停效果已移除，保持为 0
     highlightView.alphaValue = 0
     return dismissDetails()
   }
 
   func setSelected(_ selected: Bool) {
+    let wasSelected = isDateSelected
     isDateSelected = selected
-    // Update selection ring visibility
+
+    // Update selection ring visibility with animation
     let isDateToday = cellDate.map { Calendar.solar.isDate($0, inSameDayAs: Date.now) } ?? false
-    selectionRingView.isHidden = !(isDateSelected && !isDateToday)
+    let shouldShow = isDateSelected && !isDateToday
+
+    // Only animate if the state actually changed
+    if wasSelected != selected {
+      animateSelection(show: shouldShow)
+    } else if !shouldShow {
+      selectionRingView.isHidden = true
+    }
   }
 }
 
@@ -341,9 +385,18 @@ private extension DateGridCell {
     static let lunarFontSize: Double = FontSizes.small
     static let eventViewHeight: Double = 10
     static let focusRingBorderWidth: Double = 2
-    static let selectionRingBorderWidth: Double = 2
-    static let holidayViewImage: NSImage = .with(symbolName: Icons.bookmarkFill, pointSize: 9)
+    static let selectionRingBorderWidth: Double = 1.5
     static let lunarDateFormatter: DateFormatter = .lunarDate
+    // 节假日图标
+    static let workdayIcon: NSImage = .with(symbolName: "briefcase.fill", pointSize: 9)  // 补班日：公文包
+    static let holidayIcon: NSImage = .with(symbolName: "circle.fill", pointSize: 9)     // 放假日：圆点
+    // 固定圆圈尺寸，保证所有日期大小一致且为正圆
+    static let fixedRingSize: Double = 40  // 40pt 避免横向重合，偶数尺寸渲染更精确
+  }
+
+  enum AnimationConstants {
+    // 只保留基本的淡入淡出时长
+    static let selectionDuration: TimeInterval = 0.15
   }
 
   func setUp() {
@@ -405,18 +458,17 @@ private extension DateGridCell {
         constant: Constants.focusRingBorderWidth + AppDesign.cellRectInset * 2
       ),
 
-      // focusRingView 设置为正方形，居中显示
+      // focusRingView 使用固定尺寸，保证所有日期大小一致且为正圆
       focusRingView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
       focusRingView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-      focusRingView.widthAnchor.constraint(equalTo: focusRingView.heightAnchor),  // 宽高相等=正方形
-      focusRingView.widthAnchor.constraint(equalTo: highlightView.widthAnchor),
-      focusRingView.heightAnchor.constraint(lessThanOrEqualTo: highlightView.heightAnchor),
+      focusRingView.widthAnchor.constraint(equalToConstant: Constants.fixedRingSize),
+      focusRingView.heightAnchor.constraint(equalToConstant: Constants.fixedRingSize),
 
       // selectionRingView 与 focusRingView 相同大小和位置
       selectionRingView.centerXAnchor.constraint(equalTo: focusRingView.centerXAnchor),
       selectionRingView.centerYAnchor.constraint(equalTo: focusRingView.centerYAnchor),
-      selectionRingView.widthAnchor.constraint(equalTo: focusRingView.widthAnchor),
-      selectionRingView.heightAnchor.constraint(equalTo: focusRingView.heightAnchor),
+      selectionRingView.widthAnchor.constraint(equalToConstant: Constants.fixedRingSize),
+      selectionRingView.heightAnchor.constraint(equalToConstant: Constants.fixedRingSize),
     ])
 
     holidayView.translatesAutoresizingMaskIntoConstraints = false
@@ -424,13 +476,57 @@ private extension DateGridCell {
     NSLayoutConstraint.activate([
       holidayView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: -3.5),
       holidayView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -1.5),
-      holidayView.widthAnchor.constraint(equalToConstant: holidayView.frame.width),
-      holidayView.heightAnchor.constraint(equalToConstant: holidayView.frame.height),
+      holidayView.widthAnchor.constraint(equalToConstant: 9),  // 固定宽度，与图标 pointSize 一致
+      holidayView.heightAnchor.constraint(equalToConstant: 9),  // 固定高度
     ])
 
     let longPressRecognizer = NSPressGestureRecognizer(target: self, action: #selector(onLongPress(_:)))
     longPressRecognizer.minimumPressDuration = 0.5
     view.addGestureRecognizer(longPressRecognizer)
+
+    // Setup Glass effects for macOS 26+
+    if #available(macOS 26.0, *), AppDesign.modernStyle {
+      setupGlassEffects()
+    }
+  }
+
+  @available(macOS 26.0, *)
+  func setupGlassEffects() {
+    let isDarkMode = view.effectiveAppearance.isDarkMode
+
+    // 今日标记的 Glass effect（深色）
+    let glassFocus = NSGlassEffectView()
+    glassFocus.cornerRadius = AppDesign.cellCornerRadius
+    let todayTint = isDarkMode ? NSColor.white.withAlphaComponent(0.12) : NSColor.black.withAlphaComponent(0.10)
+    glassFocus.tintColor = todayTint
+    glassFocus.translatesAutoresizingMaskIntoConstraints = false
+    glassFocus.setAccessibilityHidden(true)
+
+    containerView.addSubview(glassFocus, positioned: .below, relativeTo: focusRingView)
+    NSLayoutConstraint.activate([
+      glassFocus.centerXAnchor.constraint(equalTo: focusRingView.centerXAnchor),
+      glassFocus.centerYAnchor.constraint(equalTo: focusRingView.centerYAnchor),
+      glassFocus.widthAnchor.constraint(equalTo: focusRingView.widthAnchor),
+      glassFocus.heightAnchor.constraint(equalTo: focusRingView.heightAnchor),
+    ])
+    self.glassFocusView = glassFocus
+
+    // 选中日期的 Glass effect（浅色 + 边框）
+    let glassSelection = NSGlassEffectView()
+    glassSelection.cornerRadius = AppDesign.cellCornerRadius
+    let selectionTint = isDarkMode ? NSColor.white.withAlphaComponent(0.06) : NSColor.black.withAlphaComponent(0.04)
+    glassSelection.tintColor = selectionTint
+    glassSelection.translatesAutoresizingMaskIntoConstraints = false
+    glassSelection.setAccessibilityHidden(true)
+
+    containerView.addSubview(glassSelection, positioned: .below, relativeTo: selectionRingView)
+    NSLayoutConstraint.activate([
+      glassSelection.centerXAnchor.constraint(equalTo: selectionRingView.centerXAnchor),
+      glassSelection.centerYAnchor.constraint(equalTo: selectionRingView.centerYAnchor),
+      glassSelection.widthAnchor.constraint(equalTo: selectionRingView.widthAnchor),
+      glassSelection.heightAnchor.constraint(equalTo: selectionRingView.heightAnchor),
+    ])
+    self.glassSelectionView = glassSelection
   }
 
   func handleCellClick() {
@@ -438,7 +534,10 @@ private extension DateGridCell {
       return Logger.assertFail("Missing cellDate to continue")
     }
 
-    // Notify parent view to update event list
+    // Haptic feedback for glass-like tactile experience
+    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
+
+    // Notify parent view to update event list immediately (no animation delay)
     onDateSelected?(cellDate, cellEvents)
   }
 
@@ -484,5 +583,73 @@ private extension DateGridCell {
     }
 
     return wasOpen
+  }
+}
+
+// MARK: - Animation Methods
+
+private extension DateGridCell {
+  /// 选中状态动画（自适应系统版本）
+  func animateSelection(show: Bool) {
+    let duration = AnimationConstants.selectionDuration
+
+    if #available(macOS 26.0, *), AppDesign.modernStyle {
+      animateGlassSelection(show: show, duration: duration)
+    } else {
+      animateTraditionalSelection(show: show, duration: duration)
+    }
+  }
+
+  /// 传统系统的选中动画
+  func animateTraditionalSelection(show: Bool, duration: TimeInterval) {
+    guard !AppPreferences.Accessibility.reduceMotion else {
+      selectionRingView.isHidden = !show
+      return
+    }
+
+    // 只保留淡入/淡出动画，移除缩放和触感反馈
+    NSAnimationContext.runAnimationGroup { context in
+      context.duration = duration
+      context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+      selectionRingView.animator().alphaValue = show ? 1.0 : 0.0
+    }
+
+    // 更新 isHidden 状态
+    if !show {
+      DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
+        self?.selectionRingView.isHidden = true
+      }
+    } else {
+      selectionRingView.isHidden = false
+    }
+  }
+
+  /// macOS 26 的选中动画（玻璃背景 + 细边框）
+  @available(macOS 26.0, *)
+  func animateGlassSelection(show: Bool, duration: TimeInterval) {
+    guard !AppPreferences.Accessibility.reduceMotion else {
+      selectionRingView.isHidden = !show
+      (glassSelectionView as? NSGlassEffectView)?.isHidden = !show
+      return
+    }
+
+    // 同时动画边框和玻璃背景
+    NSAnimationContext.runAnimationGroup { context in
+      context.duration = duration
+      context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+      selectionRingView.animator().alphaValue = show ? 1.0 : 0.0
+      (glassSelectionView as? NSGlassEffectView)?.animator().alphaValue = show ? 1.0 : 0.0
+    }
+
+    // 更新 isHidden 状态
+    if !show {
+      DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
+        self?.selectionRingView.isHidden = true
+        (self?.glassSelectionView as? NSGlassEffectView)?.isHidden = true
+      }
+    } else {
+      selectionRingView.isHidden = false
+      (glassSelectionView as? NSGlassEffectView)?.isHidden = false
+    }
   }
 }

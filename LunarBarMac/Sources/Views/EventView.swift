@@ -29,7 +29,9 @@ final class EventView: NSStackView {
     // Only show up to three dots due to limited space
     events.prefix(Constants.eventLimit).forEach {
       let dotView = DotView()
-      dotView.layerBackgroundColor = $0.calendar?.color ?? Colors.controlAccent
+      let baseColor = $0.calendar?.color ?? Colors.controlAccent
+      // 降低亮度：使用 70% 透明度让颜色更柔和
+      dotView.layerBackgroundColor = baseColor.withAlphaComponent(0.7)
       addArrangedSubview(dotView)
     }
   }
