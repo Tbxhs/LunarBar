@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.1.0] - 2025-11-14
+- Integrate Sparkle 2 updater (code path). Uses Sparkle when available; falls back to GitHub page otherwise until appcast/signing are configured.
+- Keep “Check for Updates…” menu; when Sparkle is present it shows an Install/Update flow.
+- Prepare release tooling to also produce a ZIP for Sparkle distribution.
+
 ## [2.0.1] - 2025-11-14
 - Menu: rename “System Symbol” to “Custom Symbol”.
 - Alert: shorten title and help; show “More examples: Help” with hyperlink.

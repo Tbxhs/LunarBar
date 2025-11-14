@@ -14,5 +14,13 @@
 	<string>Grant LunarBar permission to display items in the Reminders app.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>
 	<string>Grant LunarBar permission to display items in the Reminders app.</string>
+
+	<!-- Sparkle 2 configuration -->
+	<key>SUFeedURL</key>
+	<string>https://tbxhs.github.io/LunarBar/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>REPLACE_WITH_YOUR_ED25519_PUBLIC_KEY</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
 </dict>
 </plist>

@@ -7,42 +7,29 @@
 
 import AppKit
 import LunarBarKit
+#if canImport(Sparkle)
+import Sparkle
+#endif
 
 enum AppUpdater {
-  private enum Constants {
-    static let endpoint = "https://api.github.com/repos/Tbxhs/LunarBar/releases/latest"
-    static let decoder = {
-      let decoder = JSONDecoder()
-      decoder.keyDecodingStrategy = .convertFromSnakeCase
-      return decoder
-    }()
-  }
+  #if canImport(Sparkle)
+  private static let sparkleController: SPUStandardUpdaterController? = {
+    // Initialize Sparkle's standard updater controller
+    SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+  }()
+  #endif
 
   static func checkForUpdates(explicitly: Bool) async {
-    guard let url = URL(string: Constants.endpoint) else {
-      return Logger.assertFail("Failed to create the URL: \(Constants.endpoint)")
-    }
-
-    guard let (data, response) = try? await URLSession.shared.data(from: url) else {
-      return Logger.log(.error, "Failed to reach out to the server")
-    }
-
-    guard let status = (response as? HTTPURLResponse)?.statusCode, status == 200 else {
-      if explicitly {
-        DispatchQueue.main.async {
-          presentError()
-        }
+    #if canImport(Sparkle)
+    if let controller = sparkleController {
+      DispatchQueue.main.async {
+        controller.checkForUpdates(nil)
       }
-
-      return Logger.log(.error, "Failed to get the update")
+      return
     }
-
-    guard let version = try? Constants.decoder.decode(AppVersion.self, from: data) else {
-      return Logger.log(.error, "Failed to decode the data")
-    }
-
-    DispatchQueue.main.async {
-      presentUpdate(newVersion: version, explicitly: explicitly)
+    #endif
+    if explicitly {
+      DispatchQueue.main.async { presentUnavailable() }
     }
   }
 }
@@ -51,91 +38,13 @@ enum AppUpdater {
 
 @MainActor
 private extension AppUpdater {
-  /// Compare two semantic version strings (e.g., "1.9.1" vs "1.9.2")
-  /// Returns:
-  /// - .orderedAscending if version1 < version2
-  /// - .orderedSame if version1 == version2
-  /// - .orderedDescending if version1 > version2
-  static func compareVersions(_ version1: String, _ version2: String) -> ComparisonResult {
-    let components1 = version1.split(separator: ".").compactMap { Int($0) }
-    let components2 = version2.split(separator: ".").compactMap { Int($0) }
-
-    let maxLength = max(components1.count, components2.count)
-
-    for i in 0..<maxLength {
-      let v1 = i < components1.count ? components1[i] : 0
-      let v2 = i < components2.count ? components2[i] : 0
-
-      if v1 < v2 {
-        return .orderedAscending
-      } else if v1 > v2 {
-        return .orderedDescending
-      }
-    }
-
-    return .orderedSame
-  }
-
-  static func presentError() {
+  static func presentUnavailable() {
     let alert = NSAlert()
     alert.messageText = Localized.Updater.updateFailedTitle
-    alert.informativeText = Localized.Updater.updateFailedMessage
-    alert.addButton(withTitle: Localized.Updater.checkVersionHistory)
-    alert.addButton(withTitle: Localized.Updater.notNow)
-
-    guard alert.runModal() == .alertFirstButtonReturn else {
-      return
-    }
-
-    NSWorkspace.shared.safelyOpenURL(string: "https://github.com/Tbxhs/LunarBar/releases")
-  }
-
-  static func presentUpdate(newVersion: AppVersion, explicitly: Bool) {
-    guard let currentVersion = Bundle.main.shortVersionString else {
-      return Logger.assertFail("Invalid current version string")
-    }
-
-    // Check if the new version was skipped for implicit updates
-    guard explicitly || !AppPreferences.Updater.skippedVersions.contains(newVersion.name) else {
-      return
-    }
-
-    // Compare versions semantically
-    let comparison = compareVersions(newVersion.name, currentVersion)
-
-    // If new version is not greater than current, no update needed
-    guard comparison == .orderedDescending else {
-      return {
-        guard explicitly else {
-          return
-        }
-
-        let alert = NSAlert()
-        alert.messageText = Localized.Updater.upToDateTitle
-        alert.informativeText = String(format: Localized.Updater.upToDateMessageFormat, currentVersion)
-        alert.runModal()
-      }()
-    }
-
-    let alert = NSAlert()
-    alert.messageText = String(format: Localized.Updater.newVersionAvailableTitle, newVersion.name)
-    alert.markdownBody = newVersion.body ?? ""
+    alert.informativeText = String(localized: "Sparkle updater is not configured. Please set SUFeedURL and SUPublicEDKey.")
     alert.addButton(withTitle: Localized.General.learnMore)
-
-    if explicitly {
-      alert.addButton(withTitle: Localized.Updater.notNow)
-    } else {
-      alert.addButton(withTitle: Localized.Updater.remindMeLater)
-      alert.addButton(withTitle: Localized.Updater.skipThisVersion)
-    }
-
-    switch alert.runModal() {
-    case .alertFirstButtonReturn: // Learn More
-      NSWorkspace.shared.safelyOpenURL(string: newVersion.htmlUrl)
-    case .alertThirdButtonReturn: // Skip This Version
-      AppPreferences.Updater.skippedVersions.insert(newVersion.name)
-    default:
-      break
+    if alert.runModal() == .alertFirstButtonReturn {
+      NSWorkspace.shared.safelyOpenURL(string: "https://sparkle-project.org/documentation/")
     }
   }
 }
@@ -144,15 +53,8 @@ private extension AppUpdater {
 
 private extension Localized {
   enum Updater {
-    static let upToDateTitle = String(localized: "You're up-to-date!", comment: "Title for the up-to-date info")
-    static let upToDateMessageFormat = String(localized: "LunarBar %@ is currently the latest version.", comment: "Message for the up-to-date info")
-    static let newVersionAvailableTitle = String(localized: "LunarBar %@ is available!", comment: "Title for new version available")
     static let updateFailedTitle = String(localized: "Failed to get the update.", comment: "Title for failed to get the update")
-    static let updateFailedMessage = String(localized: "Please check your network connection or get the latest release from the version history.", comment: "Message for failed to get the update")
-    static let notNow = String(localized: "Not Now", comment: "Title for the \"Not Now\" button")
-    static let remindMeLater = String(localized: "Remind Me Later", comment: "Title for the \"Remind Me Later\" button")
-    static let skipThisVersion = String(localized: "Skip This Version", comment: "Title for the \"Skip This Version\" button")
-    static let checkVersionHistory = String(localized: "Check Version History", comment: "Title for the \"Check Version History\" button")
+    static let updateFailedMessage = String(localized: "Please configure the updater.", comment: "Message for failed to get the update")
   }
 }
 

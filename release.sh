@@ -150,6 +150,15 @@ DMG_SIZE=$(ls -lh "$FINAL_DMG" | awk '{print $5}')
 echo -e "${GREEN}✓ DMG created: ${DMG_SIZE}${NC}"
 echo ""
 
+# Step 4.1: Create ZIP for Sparkle (optional)
+echo "🗜️  Creating ZIP package for Sparkle..."
+ZIP_PATH="dist/LunarBar-${VERSION}.zip"
+rm -f "$ZIP_PATH"
+ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
+ZIP_SIZE=$(ls -lh "$ZIP_PATH" | awk '{print $5}')
+echo -e "${GREEN}✓ ZIP created: ${ZIP_SIZE}${NC}"
+echo ""
+
 # Step 5: Create Git tag
 echo "🏷️  Creating Git tag..."
 git tag -fa "v${VERSION}" -m "Release ${VERSION}"
@@ -193,7 +202,8 @@ gh release create "v${VERSION}" \
     --title "${VERSION}" \
     --notes "${CHANGELOG}" \
     --repo Tbxhs/LunarBar \
-    "dist/LunarBar-${VERSION}.dmg"
+    "dist/LunarBar-${VERSION}.dmg" \
+    "dist/LunarBar-${VERSION}.zip"
 
 echo -e "${GREEN}✓ Release published${NC}"
 echo ""
@@ -203,3 +213,9 @@ echo -e "${GREEN}✨ Release ${VERSION} complete!${NC}"
 echo ""
 echo "🔗 View release: https://github.com/Tbxhs/LunarBar/releases/tag/v${VERSION}"
 echo ""
+
+echo "ℹ️  Sparkle setup next steps (once):"
+echo "   1) Generate EdDSA keys and add SUPublicEDKey to Info.plist"
+echo "   2) Sign the ZIP with Sparkle's sign_update, and generate appcast.xml"
+echo "   3) Host appcast.xml over HTTPS (e.g., GitHub Pages) and set SUFeedURL"
+echo "   4) Then Sparkle will offer Install/Update in-app"
