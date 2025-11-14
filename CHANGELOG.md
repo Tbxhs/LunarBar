@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.1] - 2025-11-14
+- Menu: rename “System Symbol” to “Custom Symbol”.
+- Alert: shorten title and help; show “More examples: Help” with hyperlink.
+- Use a single Chinese wiki page for examples; remove in‑repo docs copy.
+- Update localizations (en/zh‑Hans/zh‑Hant) for the new strings.
+
 ## [2.0.0] - 2025-11-05
 - Refined date selection UI with perfectly circular indicators (40pt fixed size) to eliminate overlap.
 - Unified the visual appearance of today's marker and selected date rings for consistency.

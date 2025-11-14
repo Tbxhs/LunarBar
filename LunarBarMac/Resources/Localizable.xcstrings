@@ -355,6 +355,41 @@
         }
       }
     },
+    "Choose a Custom Icon" : {
+      "comment" : "[Alert] Configure the SF Symbols icon name",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择自定义图标"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇自訂圖示"
+          }
+        }
+      }
+    },
+    "Choose a Custom Icon (SF Symbols)" : {
+      "comment" : "[Alert] Configure the SF Symbols icon name",
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择自定义图标（SF Symbols）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇自訂圖示（SF Symbols）"
+          }
+        }
+      }
+    },
     "Chunfen" : {
       "comment" : "The 4th solar term, always in Chinese",
       "localizations" : {
@@ -482,6 +517,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自訂格式"
+          }
+        }
+      }
+    },
+    "Custom Symbol" : {
+      "comment" : "[Menu] Use an SF Symbols name as the menu bar icon",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义符号"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自訂符號"
+          }
+        }
+      }
+    },
+    "Custom Symbol (SF Symbols)" : {
+      "comment" : "[Menu] Use an SF Symbols name as the menu bar icon",
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义符号（SF Symbols）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自訂符號（SF Symbols）"
           }
         }
       }
@@ -1429,6 +1499,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "zh-Hant"
+          }
+        }
+      }
+    },
+    "Enter an SF Symbols name, e.g., `calendar`, `moon.fill`, `gear`. More examples: [Help](https://github.com/tbxhs/LunarBar/wiki/Custom-Symbols)" : {
+      "comment" : "[Alert] Explanation and examples for SF Symbols icon name",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入一个 SF Symbols 的符号名称，例如：`calendar`、`moon.fill`、`gear`。更多示例：[帮助](https://github.com/tbxhs/LunarBar/wiki/Custom-Symbols)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請輸入一個 SF Symbols 的符號名稱，例如：`calendar`、`moon.fill`、`gear`。更多示例：[幫助](https://github.com/tbxhs/LunarBar/wiki/Custom-Symbols)"
+          }
+        }
+      }
+    },
+    "Enter an SF Symbols name, e.g., `calendar`, `moon.fill`, `gear`. See more examples: https://github.com/tbxhs/LunarBar/wiki/Custom-Symbols" : {
+      "comment" : "[Alert] Explanation and examples for SF Symbols icon name",
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入一个 SF Symbols 的符号名称，例如：`calendar`、`moon.fill`、`gear`。更多示例：https://github.com/tbxhs/LunarBar/wiki/Custom-Symbols"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請輸入一個 SF Symbols 的符號名稱，例如：`calendar`、`moon.fill`、`gear`。更多示例：https://github.com/tbxhs/LunarBar/wiki/Custom-Symbols"
           }
         }
       }
@@ -2399,6 +2504,7 @@
     },
     "Please enter a [SF Symbol](https://developer.apple.com/sf-symbols/) name here. Refer to the [wiki](https://github.com/tbxhs/LunarBar/wiki) for more instructions and examples." : {
       "comment" : "[Alert] Explanation for system symbol name",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -2414,8 +2520,26 @@
         }
       }
     },
+    "Please enter standard [date format patterns](https://unicode.org/reports/tr35/tr35-dates.html#Date_Format_Patterns) here." : {
+      "comment" : "[Alert] Explanation for custom date format",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入标准的[日期格式模式](https://unicode.org/reports/tr35/tr35-dates.html#Date_Format_Patterns)。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請輸入標準的[日期格式模式](https://unicode.org/reports/tr35/tr35-dates.html#Date_Format_Patterns)。"
+          }
+        }
+      }
+    },
     "Please enter standard [date format patterns](https://unicode.org/reports/tr35/tr35-dates.html#Date_Format_Patterns) here. Refer to the [wiki](https://github.com/tbxhs/LunarBar/wiki) for more instructions and examples." : {
       "comment" : "[Alert] Explanation for custom date format",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -2723,6 +2847,7 @@
     },
     "Set Symbol Name" : {
       "comment" : "[Alert] Configure the system symbol name",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -2854,6 +2979,7 @@
     },
     "System Symbol" : {
       "comment" : "[Menu] Use a system symbol as the menu bar icon",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
