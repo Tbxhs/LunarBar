@@ -159,6 +159,41 @@ ZIP_SIZE=$(ls -lh "$ZIP_PATH" | awk '{print $5}')
 echo -e "${GREEN}✓ ZIP created: ${ZIP_SIZE}${NC}"
 echo ""
 
+# Step 4.2: Generate Sparkle appcast (if tools + private key present)
+APPCAST_PATH="dist/appcast.xml"
+if command -v generate_appcast >/dev/null 2>&1 && [ -n "$SPARKLE_PRIVATE_KEY_FILE" ] && [ -f "$SPARKLE_PRIVATE_KEY_FILE" ]; then
+  echo "📰 Generating Sparkle appcast.xml..."
+  # generate_appcast will scan the directory and sign items if SPARKLE_PRIVATE_KEY_FILE is set
+  SPARKLE_PRIVATE_KEY_FILE="$SPARKLE_PRIVATE_KEY_FILE" generate_appcast -o "$APPCAST_PATH" dist
+  echo -e "${GREEN}✓ Appcast generated at ${APPCAST_PATH}${NC}"
+
+  echo "🌐 Publishing appcast to gh-pages..."
+  set +e
+  git fetch origin gh-pages 2>/dev/null
+  set -e
+  rm -rf build/gh-pages
+  if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+    git worktree add -B gh-pages build/gh-pages origin/gh-pages
+  else
+    git worktree add -B gh-pages build/gh-pages
+  fi
+  mkdir -p build/gh-pages
+  cp -f "$APPCAST_PATH" build/gh-pages/appcast.xml
+  pushd build/gh-pages >/dev/null
+  git add appcast.xml
+  if ! git diff --cached --quiet; then
+    git -c user.name="Tbxhs" -c user.email="Tbxhs@users.noreply.github.com" commit -m "docs(appcast): ${VERSION}"
+    git push origin gh-pages
+    echo -e "${GREEN}✓ Appcast published to gh-pages${NC}"
+  else
+    echo "Appcast unchanged; skip publishing"
+  fi
+  popd >/dev/null
+else
+  echo -e "${YELLOW}⚠️  Sparkle tools or private key not found; skip appcast generation${NC}"
+  echo "   To enable: export SPARKLE_PRIVATE_KEY_FILE=/path/to/ed25519_priv.pem and install Sparkle tools (sign_update/generate_appcast)."
+fi
+
 # Step 5: Create Git tag
 echo "🏷️  Creating Git tag..."
 git tag -fa "v${VERSION}" -m "Release ${VERSION}"
