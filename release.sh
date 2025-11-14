@@ -161,10 +161,18 @@ echo ""
 
 # Step 4.2: Generate Sparkle appcast (if tools + private key present)
 APPCAST_PATH="dist/appcast.xml"
-if command -v generate_appcast >/dev/null 2>&1 && [ -n "$SPARKLE_PRIVATE_KEY_FILE" ] && [ -f "$SPARKLE_PRIVATE_KEY_FILE" ]; then
+HAS_TOOLS=0
+if command -v generate_appcast >/dev/null 2>&1; then HAS_TOOLS=1; fi
+if command -v sparkle >/dev/null 2>&1; then HAS_TOOLS=2; fi
+
+if [ $HAS_TOOLS -gt 0 ] && [ -n "$SPARKLE_PRIVATE_KEY_FILE" ] && [ -f "$SPARKLE_PRIVATE_KEY_FILE" ]; then
   echo "📰 Generating Sparkle appcast.xml..."
-  # generate_appcast will scan the directory and sign items if SPARKLE_PRIVATE_KEY_FILE is set
-  SPARKLE_PRIVATE_KEY_FILE="$SPARKLE_PRIVATE_KEY_FILE" generate_appcast -o "$APPCAST_PATH" dist
+  if [ $HAS_TOOLS -eq 1 ]; then
+    # generate_appcast will scan the directory and sign items if SPARKLE_PRIVATE_KEY_FILE is set
+    SPARKLE_PRIVATE_KEY_FILE="$SPARKLE_PRIVATE_KEY_FILE" generate_appcast -o "$APPCAST_PATH" dist
+  else
+    SPARKLE_PRIVATE_KEY_FILE="$SPARKLE_PRIVATE_KEY_FILE" sparkle generate-appcast -o "$APPCAST_PATH" dist
+  fi
   echo -e "${GREEN}✓ Appcast generated at ${APPCAST_PATH}${NC}"
 
   echo "🌐 Publishing appcast to gh-pages..."
