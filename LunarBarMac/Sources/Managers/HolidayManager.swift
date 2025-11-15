@@ -140,7 +140,7 @@ private extension HolidayManager {
   }
 
   var userDefinedDirectory: URL {
-    URL.documentsDirectory.appending(path: Constants.directoryName, directoryHint: .isDirectory)
+    URL.applicationSupportDirectory.appending(path: "LunarBar/\(Constants.directoryName)", directoryHint: .isDirectory)
   }
 
   func ensureDirectory(_ directory: URL) {

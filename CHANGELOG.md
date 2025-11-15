@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.1] - 2025-11-15
+- Fixed file permission request on first launch by moving user-defined holiday files from ~/Documents to ~/Library/Application Support.
+- Improved user privacy and security by eliminating unnecessary Documents folder access.
+
 ## [2.2.0] - 2025-11-15
 - Simplified menu structure by removing category headers and unused accessibility options.
 - Enhanced "Pin on Top" feature with persistent state and visual checkbox indicator.

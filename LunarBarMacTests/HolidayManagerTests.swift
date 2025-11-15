@@ -18,7 +18,7 @@ final class HolidayManagerTests: XCTestCase {
 
   func testUserDefinedData() {
     let manager = HolidayManager.default
-    let directory = URL.documentsDirectory.appending(path: "Holidays", directoryHint: .isDirectory)
+    let directory = URL.applicationSupportDirectory.appending(path: "LunarBar/Holidays", directoryHint: .isDirectory)
 
     try? FileManager.default.createDirectory(
       at: directory,
