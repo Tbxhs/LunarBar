@@ -3,6 +3,18 @@
     <channel>
         <title>LunarBar</title>
         <item>
+            <title>2.2.1</title>
+            <pubDate>Sat, 15 Nov 2025 03:09:39 +0100</pubDate>
+            <sparkle:version>28</sparkle:version>
+            <sparkle:shortVersionString>2.2.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://tbxhs.github.io/LunarBar/LunarBar-2.2.1.zip" length="3526191" type="application/octet-stream" sparkle:edSignature="Yyr3ao8Syv4a8Xudvakqh9G/cFq45VjXtc5hh81vQs0NuP63T4dQcQ6qL9dr+QZIkdms0wyoFRvBquFMYIdAAg=="/>
+            <sparkle:deltas>
+                <enclosure url="https://tbxhs.github.io/LunarBar/LunarBar28-27.delta" sparkle:deltaFrom="27" length="51874" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="860336" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="UT0XZ5wMOiF0TfO/rjQwggB90vbLpO6RfhGcKBOL3XZ5kqBkTK1vMeHXued0ACZlToOMS7x9V46SLG+Y8FiYCg=="/>
+                <enclosure url="https://tbxhs.github.io/LunarBar/LunarBar28-26.delta" sparkle:deltaFrom="26" length="139394" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="860336" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="S+u2B+rPEGDjzdIqudZUCqggx/gGUhtWeQSbV/jON2FK8EB3WVmth0GyAe9f+GrAoEKIx34qgANTRn+3My/PAA=="/>
+            </sparkle:deltas>
+        </item>
+        <item>
             <title>2.2.0</title>
             <pubDate>Sat, 15 Nov 2025 02:51:19 +0100</pubDate>
             <sparkle:version>27</sparkle:version>
