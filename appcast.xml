@@ -3,6 +3,19 @@
     <channel>
         <title>LunarBar</title>
         <item>
+            <title>2.2.2</title>
+            <pubDate>Sat, 15 Nov 2025 03:15:40 +0100</pubDate>
+            <sparkle:version>29</sparkle:version>
+            <sparkle:shortVersionString>2.2.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://tbxhs.github.io/LunarBar/LunarBar-2.2.2.zip" length="3526193" type="application/octet-stream" sparkle:edSignature="PDLriq6hCGjyeNl525UF3NWpUQhqffi1CdE4OvqtThlYEOLV6U+BuoDZmeu6YQWwr4kbW+lolqmcVUHdIDe/Dg=="/>
+            <sparkle:deltas>
+                <enclosure url="https://tbxhs.github.io/LunarBar/LunarBar29-28.delta" sparkle:deltaFrom="28" length="2338" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="860336" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="Bac2MuYhGEP1SAw/k9JAoQMRn50fK04AJ8NzVMbVL4+a3brwZIPfZ3pCTsqtypsZq8bGNuFMoDpmbh7mC2ztBQ=="/>
+                <enclosure url="https://tbxhs.github.io/LunarBar/LunarBar29-27.delta" sparkle:deltaFrom="27" length="51874" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="860336" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="thp0NhHmfPpfkE1fW+XeSIo0Z1Jlxyh09k2lWqaTqNl7FO0x39ehUbI9Y5MuifEMJ2GUx+JgbOUagC6o5PLcDg=="/>
+                <enclosure url="https://tbxhs.github.io/LunarBar/LunarBar29-26.delta" sparkle:deltaFrom="26" length="138830" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="860336" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="fbV9xy4ozFEVuvgwCPbNMYBd0RO3XQHTkbGGNqUfnuf+BmIOih9C4iXowEN/CpyULGZrMO0trXRpPJxxVCCpCw=="/>
+            </sparkle:deltas>
+        </item>
+        <item>
             <title>2.2.1</title>
             <pubDate>Sat, 15 Nov 2025 03:09:39 +0100</pubDate>
             <sparkle:version>28</sparkle:version>
@@ -24,14 +37,6 @@
             <sparkle:deltas>
                 <enclosure url="https://tbxhs.github.io/LunarBar/LunarBar27-26.delta" sparkle:deltaFrom="26" length="137018" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="860336" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="sI2aMi0pqfun8e+pWkGwyc9JJGCv6ksL6s+YZ+TXmHhUumcrYI+/uLFo2S/96OUW0h16Bmj7vPj0BoNotAYMAg=="/>
             </sparkle:deltas>
-        </item>
-        <item>
-            <title>2.1.1</title>
-            <pubDate>Sat, 15 Nov 2025 00:35:31 +0100</pubDate>
-            <sparkle:version>26</sparkle:version>
-            <sparkle:shortVersionString>2.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://tbxhs.github.io/LunarBar/LunarBar-2.1.1.zip" length="3533336" type="application/octet-stream" sparkle:edSignature="2s8Nol4EPjKipyRqWFFFgQB8/cU+s6YyP132ashgNpuYhWUHJ+QJ/NU9a75WIpcQ0vdhAiM518kh71GB2+wbBA=="/>
         </item>
     </channel>
 </rss>
