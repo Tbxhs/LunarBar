@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.2.2] - 2025-11-15
+- Fixed DMG window layout to ensure all icons are visible on first open.
+- Improved release script to automatically clean up mounted DMG volumes.
+
 ## [2.2.1] - 2025-11-15
 - Fixed file permission request on first launch by moving user-defined holiday files from ~/Documents to ~/Library/Application Support.
 - Improved user privacy and security by eliminating unnecessary Documents folder access.

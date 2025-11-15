@@ -59,6 +59,22 @@ echo "🛑 Closing running app..."
 killall LunarBar 2>/dev/null || true
 echo ""
 
+# Step 1.1: Unmount any existing LunarBar DMG volumes
+echo "🗂️  Checking for mounted DMG volumes..."
+MOUNTED_VOLUMES=$(hdiutil info | grep -E "^/dev/disk" | grep -A 1 "LunarBar" | grep "/Volumes/LunarBar" | awk '{print $NF}' || true)
+if [ -n "$MOUNTED_VOLUMES" ]; then
+    echo "Unmounting existing LunarBar volumes..."
+    while IFS= read -r volume; do
+        if [ -n "$volume" ]; then
+            hdiutil detach "$volume" -quiet 2>/dev/null || true
+            echo "  ✓ Unmounted: $volume"
+        fi
+    done <<< "$MOUNTED_VOLUMES"
+else
+    echo "No mounted volumes found"
+fi
+echo ""
+
 # Step 2: Clean build
 echo "🧹 Cleaning previous build..."
 set +e
@@ -131,6 +147,12 @@ if [ -z "$MOUNT_DEVICE" ] || [ -z "$MOUNT_POINT" ]; then
     exit 1
 fi
 
+# Clean up system artifact folders BEFORE configuring layout
+# This ensures Finder doesn't include them when calculating icon positions
+if [ -n "$MOUNT_POINT" ] && [ -d "$MOUNT_POINT" ]; then
+  rm -rf "$MOUNT_POINT/.fseventsd" "$MOUNT_POINT/.Trashes" "$MOUNT_POINT/.TemporaryItems" 2>/dev/null || true
+fi
+
 /usr/bin/osascript <<'EOF'
 tell application "Finder"
   tell disk "LunarBar"
@@ -138,14 +160,14 @@ tell application "Finder"
     set current view of container window to icon view
     set toolbar visible of container window to false
     set statusbar visible of container window to false
-    set bounds of container window to {120, 120, 720, 420}
+    set bounds of container window to {120, 120, 720, 480}
     set icon size of icon view options of container window to 120
     set arrangement of icon view options of container window to not arranged
     try
-      set position of item "LunarBar.app" of container window to {170, 200}
+      set position of item "LunarBar.app" of container window to {170, 150}
     end try
     try
-      set position of item "Applications" of container window to {500, 200}
+      set position of item "Applications" of container window to {430, 150}
     end try
     delay 1
     close
@@ -159,11 +181,6 @@ EOF
 
 # Give Finder a moment to finish writing .DS_Store
 sleep 2
-
-# Clean up system artifact folders that may appear in the DMG root (best-effort)
-if [ -n "$MOUNT_POINT" ] && [ -d "$MOUNT_POINT" ]; then
-  rm -rf "$MOUNT_POINT/.fseventsd" "$MOUNT_POINT/.Trashes" 2>/dev/null || true
-fi
 
 # Detach the DMG and convert to compressed format
 hdiutil detach "$MOUNT_POINT" > /dev/null
