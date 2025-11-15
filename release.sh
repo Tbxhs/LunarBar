@@ -15,6 +15,22 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Auto-detect Sparkle tools from Homebrew Cask installation if not already set
+if [ -z "$SPARKLE_BIN_DIR" ]; then
+  # Check common Homebrew installation paths
+  for BREW_PATH in /opt/homebrew /usr/local; do
+    if [ -d "$BREW_PATH/Caskroom/sparkle" ]; then
+      # Find the latest version directory
+      SPARKLE_VERSION=$(ls -1 "$BREW_PATH/Caskroom/sparkle" | sort -V | tail -1)
+      if [ -x "$BREW_PATH/Caskroom/sparkle/$SPARKLE_VERSION/bin/generate_appcast" ]; then
+        export SPARKLE_BIN_DIR="$BREW_PATH/Caskroom/sparkle/$SPARKLE_VERSION/bin"
+        echo "📦 Auto-detected Sparkle tools at: $SPARKLE_BIN_DIR"
+        break
+      fi
+    fi
+  done
+fi
+
 # Get version from Build.xcconfig
 VERSION=$(grep "MARKETING_VERSION" Build.xcconfig | awk '{print $3}')
 if [ -z "$VERSION" ]; then
