@@ -100,9 +100,8 @@ echo -e "${GREEN}✓ Build complete${NC}"
 echo ""
 
 # Step 4: Create DMG
-echo "📀 Creating DMG package..."
+echo "📀 Creating DMG package with create-dmg..."
 mkdir -p dist
-rm -f "dist/LunarBar-${VERSION}.dmg"
 
 APP_PATH="${DERIVED_DATA_DIR}/Build/Products/Release/LunarBar.app"
 if [ ! -d "$APP_PATH" ]; then
@@ -120,7 +119,15 @@ if ! /usr/bin/codesign --force --deep --sign - "$APP_PATH" 2>/dev/null; then
 fi
 echo ""
 
-# Create temporary directory for DMG contents
+# Check if create-dmg is available
+if ! command -v create-dmg >/dev/null 2>&1; then
+    echo -e "${RED}❌ create-dmg not found${NC}"
+    echo "Please install it with: brew install create-dmg"
+    echo "See: https://github.com/create-dmg/create-dmg"
+    exit 1
+fi
+
+# Create temporary directory for DMG source
 DMG_TEMP="dist/dmg_temp"
 rm -rf "$DMG_TEMP"
 mkdir -p "$DMG_TEMP"
@@ -128,70 +135,37 @@ mkdir -p "$DMG_TEMP"
 # Copy app to temp directory
 cp -R "$APP_PATH" "$DMG_TEMP/"
 
-# Create symbolic link to Applications folder
-ln -s /Applications "$DMG_TEMP/Applications"
-
-# Create a writable DMG from temp directory
-DMG_RW="dist/LunarBar-${VERSION}-temp.dmg"
 FINAL_DMG="dist/LunarBar-${VERSION}.dmg"
-rm -f "$DMG_RW" "$FINAL_DMG"
-hdiutil create -volname "LunarBar" -srcfolder "$DMG_TEMP" -ov -format UDRW "$DMG_RW" > /dev/null
+rm -f "$FINAL_DMG"
 
-echo "🎨 Configuring DMG window layout..."
-MOUNT_OUTPUT=$(hdiutil attach -readwrite -noverify -noautoopen "$DMG_RW")
-MOUNT_DEVICE=$(echo "$MOUNT_OUTPUT" | awk '/\/Volumes/ {print $1}')
-MOUNT_POINT=$(echo "$MOUNT_OUTPUT" | awk '/\/Volumes/ {print $3}')
-
-if [ -z "$MOUNT_DEVICE" ] || [ -z "$MOUNT_POINT" ]; then
-    echo -e "${RED}❌ Failed to mount DMG for customization${NC}"
-    exit 1
-fi
-
-# Clean up system artifact folders BEFORE configuring layout
-# This ensures Finder doesn't include them when calculating icon positions
-if [ -n "$MOUNT_POINT" ] && [ -d "$MOUNT_POINT" ]; then
-  rm -rf "$MOUNT_POINT/.fseventsd" "$MOUNT_POINT/.Trashes" "$MOUNT_POINT/.TemporaryItems" 2>/dev/null || true
-fi
-
-/usr/bin/osascript <<'EOF'
-tell application "Finder"
-  tell disk "LunarBar"
-    open
-    set current view of container window to icon view
-    set toolbar visible of container window to false
-    set statusbar visible of container window to false
-    set bounds of container window to {120, 120, 720, 480}
-    set icon size of icon view options of container window to 120
-    set arrangement of icon view options of container window to not arranged
-    try
-      set position of item "LunarBar.app" of container window to {170, 150}
-    end try
-    try
-      set position of item "Applications" of container window to {430, 150}
-    end try
-    delay 1
-    close
-    delay 0.2
-    open
-    delay 1
-    update without registering applications
-  end tell
-end tell
-EOF
-
-# Give Finder a moment to finish writing .DS_Store
-sleep 2
-
-# Detach the DMG and convert to compressed format
-hdiutil detach "$MOUNT_POINT" > /dev/null
-hdiutil convert "$DMG_RW" -format UDZO -imagekey zlib-level=9 -o "$FINAL_DMG" > /dev/null
-rm -f "$DMG_RW"
+# Use create-dmg to build a beautiful DMG with proper layout
+# This tool automatically handles:
+# - Applications symlink
+# - Window positioning and sizing
+# - Icon placement
+# - Removal of .fseventsd and other system files
+create-dmg \
+  --volname "LunarBar" \
+  --window-pos 200 120 \
+  --window-size 600 360 \
+  --icon-size 120 \
+  --icon "LunarBar.app" 170 100 \
+  --hide-extension "LunarBar.app" \
+  --app-drop-link 430 100 \
+  --no-internet-enable \
+  "$FINAL_DMG" \
+  "$DMG_TEMP" 2>&1 | grep -v "^hdiutil:" || true
 
 # Clean up temp directory
 rm -rf "$DMG_TEMP"
 
-DMG_SIZE=$(ls -lh "$FINAL_DMG" | awk '{print $5}')
-echo -e "${GREEN}✓ DMG created: ${DMG_SIZE}${NC}"
+if [ -f "$FINAL_DMG" ]; then
+  DMG_SIZE=$(ls -lh "$FINAL_DMG" | awk '{print $5}')
+  echo -e "${GREEN}✓ DMG created: ${DMG_SIZE}${NC}"
+else
+  echo -e "${RED}❌ DMG creation failed${NC}"
+  exit 1
+fi
 echo ""
 
 # Step 4.1: Create ZIP for Sparkle (optional)

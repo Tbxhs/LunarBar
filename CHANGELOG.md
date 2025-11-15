@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.2.3] - 2025-11-15
+- Switched to create-dmg tool for professional DMG packaging.
+- Completely eliminated .fseventsd and other system files from DMG.
+- Improved icon positioning and window layout consistency.
+
 ## [2.2.2] - 2025-11-15
 - Fixed DMG window layout to ensure all icons are visible on first open.
 - Improved release script to automatically clean up mounted DMG volumes.

@@ -49,7 +49,27 @@ This will automatically:
 
 ## First Time Setup
 
-### Authenticate GitHub CLI
+### Prerequisites
+
+The release script requires the following tools:
+
+#### 1. Install create-dmg (Required)
+
+For creating beautiful DMG installers with proper window layout and automatic cleanup of system files:
+
+```bash
+brew install create-dmg
+```
+
+**Why create-dmg?** It automatically handles:
+- ✅ Clean DMG without `.fseventsd` or `.Trashes` files
+- ✅ Perfect icon positioning and window layout
+- ✅ Applications folder symlink
+- ✅ Professional drag-to-install interface
+
+See: https://github.com/create-dmg/create-dmg
+
+#### 2. Authenticate GitHub CLI
 
 The release script uses GitHub CLI to create releases. First time you need to authenticate:
 
