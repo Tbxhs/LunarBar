@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.2.0] - 2025-11-15
+- Simplified menu structure by removing category headers and unused accessibility options.
+- Enhanced "Pin on Top" feature with persistent state and visual checkbox indicator.
+- Improved custom date format help with Chinese-friendly Wiki documentation and examples.
+- Fixed window activation issues for About and Check for Updates dialogs to ensure they appear in front.
+- Updated all localizations (English, Simplified Chinese, Traditional Chinese) for consistency.
+
+## [2.1.1] - 2025-11-14
+- Sparkle feed configuration rollout: publish appcast to gh-pages when signing tools and private key are available.
+- Validation release for automatic in-app update (Install/Later/Skip) with Sparkle 2.
+
 ## [2.1.0] - 2025-11-14
 - Integrate Sparkle 2 updater (code path). Uses Sparkle when available; falls back to GitHub page otherwise until appcast/signing are configured.
 - Keep “Check for Updates…” menu; when Sparkle is present it shows an Install/Update flow.

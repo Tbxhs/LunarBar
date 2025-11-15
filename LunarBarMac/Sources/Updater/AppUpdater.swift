@@ -12,24 +12,33 @@ import Sparkle
 #endif
 
 enum AppUpdater {
-  #if canImport(Sparkle)
-  private static let sparkleController: SPUStandardUpdaterController? = {
-    // Initialize Sparkle's standard updater controller
-    SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
-  }()
-  #endif
+#if canImport(Sparkle)
+  private static var sparkleController: SPUStandardUpdaterController?
+
+  static func configureSparkleController(_ controller: SPUStandardUpdaterController) {
+    sparkleController = controller
+  }
+#endif
 
   static func checkForUpdates(explicitly: Bool) async {
-    #if canImport(Sparkle)
+#if canImport(Sparkle)
     if let controller = sparkleController {
-      DispatchQueue.main.async {
-        controller.checkForUpdates(nil)
+      await MainActor.run {
+        if explicitly {
+          NSApp.activate(ignoringOtherApps: true)
+          controller.checkForUpdates(nil)
+        } else {
+          controller.updater.checkForUpdatesInBackground()
+        }
       }
       return
     }
-    #endif
+#endif
+
     if explicitly {
-      DispatchQueue.main.async { presentUnavailable() }
+      await MainActor.run {
+        presentUnavailable()
+      }
     }
   }
 }
@@ -49,18 +58,8 @@ private extension AppUpdater {
   }
 }
 
-// MARK: - Private
-
 private extension Localized {
   enum Updater {
     static let updateFailedTitle = String(localized: "Failed to get the update.", comment: "Title for failed to get the update")
-    static let updateFailedMessage = String(localized: "Please configure the updater.", comment: "Message for failed to get the update")
-  }
-}
-
-private extension AppPreferences {
-  enum Updater {
-    @Storage(key: "updater.skipped-versions", defaultValue: Set())
-    static var skippedVersions: Set<String>
   }
 }

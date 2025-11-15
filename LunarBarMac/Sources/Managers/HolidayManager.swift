@@ -128,7 +128,7 @@ private extension HolidayManager {
   enum Constants {
     static let directoryName = "Holidays"
     static let fileExtension = "json"
-    static let endpoint = "https://github.com/tbxhs/Holidays/raw/main/mainland-china.json"
+    static let endpoint = "https://github.com/Tbxhs/Holidays/raw/main/mainland-china.json"
   }
 
   var defaultDirectory: URL? {

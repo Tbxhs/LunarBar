@@ -7,6 +7,9 @@
 
 import AppKit
 import LunarBarKit
+#if canImport(Sparkle)
+import Sparkle
+#endif
 
 class AppDelegate: NSObject, NSApplicationDelegate {
   private lazy var statusItem: NSStatusItem = {
@@ -22,6 +25,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   private var popoverClosedTime: TimeInterval = 0
   private var countingDate: Date?
 
+#if canImport(Sparkle)
+  private var sparkleController: SPUStandardUpdaterController?
+#endif
+
   func applicationDidFinishLaunching(_ notification: Notification) {
     Logger.log(.info, "applicationDidFinishLaunching: start")
     // We rely on tooltips to display information, change the initial delay to 1s to be faster
@@ -31,6 +38,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // Prepare public holiday data
     _ = HolidayManager.default
     Logger.log(.info, "Holiday manager initialized")
+
+#if canImport(Sparkle)
+    // Initialize Sparkle updater on the main thread before any checkForUpdates call.
+    let controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+    sparkleController = controller
+    AppUpdater.configureSparkleController(controller)
+    Logger.log(.info, "Sparkle updater configured")
+#endif
 
     // Update the icon and attach it to the menu bar
     updateMenuBarIcon()

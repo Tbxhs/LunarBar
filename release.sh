@@ -82,6 +82,12 @@ if [ ! -d "$APP_PATH" ]; then
     fi
 fi
 
+echo "🔏 Performing ad-hoc code signing for LunarBar.app (to satisfy Sparkle runtime checks)..."
+if ! /usr/bin/codesign --force --deep --sign - "$APP_PATH" 2>/dev/null; then
+  echo -e "${YELLOW}⚠️  Ad-hoc code signing failed; the app may still fail to load Sparkle at runtime${NC}"
+fi
+echo ""
+
 # Create temporary directory for DMG contents
 DMG_TEMP="dist/dmg_temp"
 rm -rf "$DMG_TEMP"
@@ -138,6 +144,11 @@ EOF
 # Give Finder a moment to finish writing .DS_Store
 sleep 2
 
+# Clean up system artifact folders that may appear in the DMG root (best-effort)
+if [ -n "$MOUNT_POINT" ] && [ -d "$MOUNT_POINT" ]; then
+  rm -rf "$MOUNT_POINT/.fseventsd" "$MOUNT_POINT/.Trashes" 2>/dev/null || true
+fi
+
 # Detach the DMG and convert to compressed format
 hdiutil detach "$MOUNT_POINT" > /dev/null
 hdiutil convert "$DMG_RW" -format UDZO -imagekey zlib-level=9 -o "$FINAL_DMG" > /dev/null
@@ -152,26 +163,34 @@ echo ""
 
 # Step 4.1: Create ZIP for Sparkle (optional)
 echo "🗜️  Creating ZIP package for Sparkle..."
-ZIP_PATH="dist/LunarBar-${VERSION}.zip"
+SPARKLE_ARCHIVES_DIR="dist/updates"
+mkdir -p "$SPARKLE_ARCHIVES_DIR"
+ZIP_PATH="${SPARKLE_ARCHIVES_DIR}/LunarBar-${VERSION}.zip"
 rm -f "$ZIP_PATH"
 ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
 ZIP_SIZE=$(ls -lh "$ZIP_PATH" | awk '{print $5}')
 echo -e "${GREEN}✓ ZIP created: ${ZIP_SIZE}${NC}"
 echo ""
 
-# Step 4.2: Generate Sparkle appcast (if tools + private key present)
-APPCAST_PATH="dist/appcast.xml"
-HAS_TOOLS=0
-if command -v generate_appcast >/dev/null 2>&1; then HAS_TOOLS=1; fi
-if command -v sparkle >/dev/null 2>&1; then HAS_TOOLS=2; fi
+# Step 4.2: Generate Sparkle appcast (if tools + signing key present)
+APPCAST_PATH="${SPARKLE_ARCHIVES_DIR}/appcast.xml"
 
-if [ $HAS_TOOLS -gt 0 ] && [ -n "$SPARKLE_PRIVATE_KEY_FILE" ] && [ -f "$SPARKLE_PRIVATE_KEY_FILE" ]; then
-  echo "📰 Generating Sparkle appcast.xml..."
-  if [ $HAS_TOOLS -eq 1 ]; then
-    # generate_appcast will scan the directory and sign items if SPARKLE_PRIVATE_KEY_FILE is set
-    SPARKLE_PRIVATE_KEY_FILE="$SPARKLE_PRIVATE_KEY_FILE" generate_appcast -o "$APPCAST_PATH" dist
+# Prefer developer tools from SPARKLE_BIN_DIR, fallback to generate_appcast in PATH
+USE_APPCAST_TOOL=""
+if [ -n "$SPARKLE_BIN_DIR" ] && [ -x "$SPARKLE_BIN_DIR/generate_appcast" ]; then
+  USE_APPCAST_TOOL="$SPARKLE_BIN_DIR/generate_appcast"
+elif command -v generate_appcast >/dev/null 2>&1; then
+  USE_APPCAST_TOOL="generate_appcast"
+fi
+
+if [ -n "$USE_APPCAST_TOOL" ]; then
+  echo "📰 Generating Sparkle appcast.xml using: $USE_APPCAST_TOOL"
+  if [ -n "$SPARKLE_PRIVATE_KEY_FILE" ] && [ -f "$SPARKLE_PRIVATE_KEY_FILE" ]; then
+    # Use explicit private key file if provided (CI / advanced setups)
+    "$USE_APPCAST_TOOL" --ed-key-file "$SPARKLE_PRIVATE_KEY_FILE" -o "$APPCAST_PATH" "$SPARKLE_ARCHIVES_DIR"
   else
-    SPARKLE_PRIVATE_KEY_FILE="$SPARKLE_PRIVATE_KEY_FILE" sparkle generate-appcast -o "$APPCAST_PATH" dist
+    # Otherwise rely on the EdDSA key stored in the user's Keychain (recommended local setup)
+    "$USE_APPCAST_TOOL" -o "$APPCAST_PATH" "$SPARKLE_ARCHIVES_DIR"
   fi
   echo -e "${GREEN}✓ Appcast generated at ${APPCAST_PATH}${NC}"
 
@@ -187,8 +206,10 @@ if [ $HAS_TOOLS -gt 0 ] && [ -n "$SPARKLE_PRIVATE_KEY_FILE" ] && [ -f "$SPARKLE_
   fi
   mkdir -p build/gh-pages
   cp -f "$APPCAST_PATH" build/gh-pages/appcast.xml
+  # Also publish Sparkle update archives alongside appcast.xml
+  cp -f "$SPARKLE_ARCHIVES_DIR"/* build/gh-pages/ 2>/dev/null || true
   pushd build/gh-pages >/dev/null
-  git add appcast.xml
+  git add appcast.xml *.zip 2>/dev/null || git add appcast.xml
   if ! git diff --cached --quiet; then
     git -c user.name="Tbxhs" -c user.email="Tbxhs@users.noreply.github.com" commit -m "docs(appcast): ${VERSION}"
     git push origin gh-pages
@@ -198,8 +219,13 @@ if [ $HAS_TOOLS -gt 0 ] && [ -n "$SPARKLE_PRIVATE_KEY_FILE" ] && [ -f "$SPARKLE_
   fi
   popd >/dev/null
 else
-  echo -e "${YELLOW}⚠️  Sparkle tools or private key not found; skip appcast generation${NC}"
-  echo "   To enable: export SPARKLE_PRIVATE_KEY_FILE=/path/to/ed25519_priv.pem and install Sparkle tools (sign_update/generate_appcast)."
+  echo -e "${YELLOW}⚠️  Sparkle developer tools not found; skip appcast generation${NC}"
+  echo "   To enable signing locally:"
+  echo "   1) Install Sparkle developer tools (contains 'generate_appcast' & 'sign_update'):"
+  echo "      https://github.com/sparkle-project/Sparkle/releases or 'brew install --cask sparkle'"
+  echo "   2) Ensure 'generate_appcast' is either in SPARKLE_BIN_DIR or in your PATH."
+  echo "   3) Optionally set SPARKLE_PRIVATE_KEY_FILE to a private key file if you are not using the Keychain."
+  echo "   Then rerun ./release.sh"
 fi
 
 # Step 5: Create Git tag
@@ -246,7 +272,7 @@ gh release create "v${VERSION}" \
     --notes "${CHANGELOG}" \
     --repo Tbxhs/LunarBar \
     "dist/LunarBar-${VERSION}.dmg" \
-    "dist/LunarBar-${VERSION}.zip"
+    "dist/updates/LunarBar-${VERSION}.zip"
 
 echo -e "${GREEN}✓ Release published${NC}"
 echo ""

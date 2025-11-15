@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1A5448082EB0D11E0083B902 /* EventListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A5448072EB0D11E0083B902 /* EventListView.swift */; };
+		1AE8727D2EC7E66C004E3466 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 1AE8727C2EC7E66C004E3466 /* Sparkle */; };
 		87007C1F2CE7157F006E98DE /* RuntimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87007C1E2CE7157F006E98DE /* RuntimeTests.swift */; };
 		871429192B3DAF4A003FA2CB /* AppLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 871429182B3DAF4A003FA2CB /* AppLocalizer.swift */; };
 		8714291C2B3DBFDF003FA2CB /* AppMainVC+Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8714291B2B3DBFDF003FA2CB /* AppMainVC+Menu.swift */; };
@@ -114,6 +115,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8777B95A2B3426F7007915B2 /* AppKitControls in Frameworks */,
+				1AE8727D2EC7E66C004E3466 /* Sparkle in Frameworks */,
 				8782F4732B33F8AC008B1912 /* LunarBarKit in Frameworks */,
 				8782F4692B33E7E1008B1912 /* AppKitExtensions in Frameworks */,
 			);
@@ -307,6 +309,7 @@
 				8782F4682B33E7E1008B1912 /* AppKitExtensions */,
 				8782F4722B33F8AC008B1912 /* LunarBarKit */,
 				8777B9592B3426F7007915B2 /* AppKitControls */,
+				1AE8727C2EC7E66C004E3466 /* Sparkle */,
 			);
 			productName = LunarBar;
 			productReference = 874E99292B33D8C0002FC90A /* LunarBar.app */;
@@ -342,6 +345,9 @@
 				"zh-Hant",
 			);
 			mainGroup = 874E99202B33D8C0002FC90A;
+			packageReferences = (
+				1AE8727A2EC7E626004E3466 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			productRefGroup = 874E992A2B33D8C0002FC90A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -695,7 +701,23 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		1AE8727A2EC7E626004E3466 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		1AE8727C2EC7E66C004E3466 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1AE8727A2EC7E626004E3466 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
 		8777B9592B3426F7007915B2 /* AppKitControls */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AppKitControls;

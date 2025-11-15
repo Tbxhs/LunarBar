@@ -14,7 +14,6 @@ import LunarBarKit
  */
 final class AppMainVC: NSViewController {
   // States
-  var pinnedOnTop = false
   var monthDate = Date.now
   weak var popover: NSPopover?
 
@@ -28,7 +27,7 @@ final class AppMainVC: NSViewController {
   // Factory function
   static func createPopover() -> NSPopover {
     let popover = NSPopover()
-    popover.behavior = .transient
+    popover.behavior = AppPreferences.General.pinnedOnTop ? .applicationDefined : .transient
     popover.contentSize = desiredContentSize
     popover.animates = !AppPreferences.Accessibility.reduceMotion
 
@@ -147,8 +146,8 @@ extension AppMainVC {
   }
 
   func togglePinnedOnTop() {
-    pinnedOnTop.toggle()
-    popover?.behavior = pinnedOnTop ? .applicationDefined : .transient
+    AppPreferences.General.pinnedOnTop.toggle()
+    popover?.behavior = AppPreferences.General.pinnedOnTop ? .applicationDefined : .transient
   }
 
   func updateEventList(for date: Date, events: [EKCalendarItem]) {

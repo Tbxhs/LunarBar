@@ -36,6 +36,8 @@ enum Localized {
     static let menuTitleAppearance = String(localized: "Appearance", comment: "[Menu] Change dark mode preference")
     static let menuTitleClassicInterface = String(localized: "Classic Interface", comment: "[Menu] Whether to use classic interface in macOS Tahoe")
     static let menuTitleMenuBarIcon = String(localized: "Menu Bar Icon", comment: "[Menu] Section title for icons")
+    static let menuTitleMenuBarIconBasic = String(localized: "Basic Icons", comment: "[Menu] Section title for basic menu bar icons")
+    static let menuTitleMenuBarIconCustom = String(localized: "Custom", comment: "[Menu] Section title for custom menu bar icons")
     static let menuTitleFilledDate = String(localized: "Filled Date", comment: "[Menu] Use the current date as the menu bar icon, filled style")
     static let menuTitleOutlinedDate = String(localized: "Outlined Date", comment: "[Menu] Use the current date as the menu bar icon, outlined style")
     static let menuTitleCalendarIcon = String(localized: "Calendar Icon", comment: "[Menu] Use a calendar icon as the menu bar icon")
@@ -73,9 +75,9 @@ enum Localized {
 
     // Alert
     static let alertMessageSetDateFormat = String(localized: "Set Date Format", comment: "[Alert] Configure the custom date format")
-    static let alertExplanationSetDateFormat = String(localized: "Please enter standard [date format patterns](https://unicode.org/reports/tr35/tr35-dates.html#Date_Format_Patterns) here.", comment: "[Alert] Explanation for custom date format")
+    static let alertExplanationSetDateFormat = String(localized: "Enter date format, e.g., `M/d HH:mm`, `yyyy-MM-dd`. More examples: [Help](https://github.com/Tbxhs/LunarBar/wiki/CustomDateFormat)", comment: "[Alert] Explanation and examples for custom date format")
     static let alertMessageSetSymbolName = String(localized: "Choose a Custom Icon", comment: "[Alert] Configure the SF Symbols icon name")
-    static let alertExplanationSetSymbolName = String(localized: "Enter an SF Symbols name, e.g., `calendar`, `moon.fill`, `gear`. More examples: [Help](https://github.com/tbxhs/LunarBar/wiki/Custom-Symbols)", comment: "[Alert] Explanation and examples for SF Symbols icon name")
+    static let alertExplanationSetSymbolName = String(localized: "Enter an SF Symbols name, e.g., `calendar`, `moon.fill`, `gear`. More examples: [Help](https://github.com/Tbxhs/LunarBar/wiki/CustomSymbols)", comment: "[Alert] Explanation and examples for SF Symbols icon name")
     static let alertMessageRelaunchRequired = String(localized: "Relaunch LunarBar to apply the change.", comment: "[Alert] Message about relaunch after changing the interface")
     static let alertButtonTitleApplyChanges = String(localized: "Apply Changes", comment: "[Alert] Apply the custom date format")
 

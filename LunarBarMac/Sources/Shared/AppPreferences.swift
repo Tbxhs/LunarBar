@@ -48,6 +48,9 @@ enum AppPreferences {
 
     @Storage(key: "general.content-scale", defaultValue: .default)
     static var contentScale: ContentScale
+
+    @Storage(key: "general.pinned-on-top", defaultValue: false)
+    static var pinnedOnTop: Bool
   }
 
   enum Calendar {

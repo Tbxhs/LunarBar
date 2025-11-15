@@ -50,6 +50,8 @@ extension AppMainVC {
       return item
     }())
 
+    menu.addSeparator()
+
     // System Symbol
     menu.addItem(createCustomIconItem(
       item: {
@@ -146,35 +148,11 @@ extension AppMainVC {
 
     menu.addSeparator()
 
-    // Accessibility Options
-    menu.addItem(withTitle: Localized.UI.menuTitleReduceMotion) { [weak self] in
-      AppPreferences.Accessibility.reduceMotion.toggle()
-      self?.popover?.animates = !AppPreferences.Accessibility.reduceMotion
-    }
-    .setOn(AppPreferences.Accessibility.reduceMotion)
-
-    menu.addItem(withTitle: Localized.UI.menuTitleReduceTransparency) { [weak self] in
-      AppPreferences.Accessibility.reduceTransparency.toggle()
-      self?.popover?.applyMaterial(AppPreferences.Accessibility.popoverMaterial)
-    }
-    .setOn(AppPreferences.Accessibility.reduceTransparency)
-
-    menu.addSeparator()
-
     // Pin on Top
-    menu.addItem({
-      let item = NSMenuItem(title: Localized.UI.menuTitlePinOnTop)
-      item.addAction { [weak self] in
-        self?.togglePinnedOnTop()
-      }
-
-      // Just a hint here, event is handled using NSEvent.addLocalMonitor
-      item.keyEquivalent = "p"
-      item.keyEquivalentModifierMask = []
-
-      item.setOn(pinnedOnTop)
-      return item
-    }())
+    menu.addItem(withTitle: Localized.UI.menuTitlePinOnTop) { [weak self] in
+      self?.togglePinnedOnTop()
+    }
+    .setOn(AppPreferences.General.pinnedOnTop)
 
     let item = NSMenuItem(title: Localized.UI.menuTitleAppearance)
     item.submenu = menu
@@ -283,7 +261,7 @@ extension AppMainVC {
 
     menu.addItem(withTitle: Localized.UI.menuTitleCustomizationTips) { [weak self] in
       self?.closePopover()
-      NSWorkspace.shared.safelyOpenURL(string: "https://github.com/tbxhs/Holidays")
+      NSWorkspace.shared.safelyOpenURL(string: "https://github.com/Tbxhs/Holidays")
     }
 
     menu.addSeparator()
@@ -317,7 +295,8 @@ extension AppMainVC {
     let item = NSMenuItem(title: Localized.UI.menuTitleAboutLunarBar)
     item.addAction { [weak self] in
       self?.closePopover()
-      NSApp.orderFrontStandardAboutPanel()
+      NSApp.activate(ignoringOtherApps: true)
+      NSApp.orderFrontStandardAboutPanel(nil)
     }
 
     return item
@@ -327,7 +306,7 @@ extension AppMainVC {
     let item = NSMenuItem(title: Localized.UI.menuTitleGitHub)
     item.addAction { [weak self] in
       self?.closePopover()
-      NSWorkspace.shared.safelyOpenURL(string: "https://github.com/tbxhs/LunarBar")
+      NSWorkspace.shared.safelyOpenURL(string: "https://github.com/Tbxhs/LunarBar")
     }
 
     return item
